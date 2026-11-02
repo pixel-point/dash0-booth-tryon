@@ -231,7 +231,8 @@
     -0.9703117504076761,
     0.04026897647891217,
     1.0
-   ]
+   ],
+   "tone": 0.55
   },
   {
    "index": 7,
@@ -573,6 +574,14 @@
    "file": "hosts.png",
    "on": true,
    "note": "Two hosts in red overalls: one points at the core screen, the other waves to the aisle by the left column. They suit any design."
+  },
+  {
+   "key": "faces",
+   "label": "Face shading",
+   "spec": "Core side face darker",
+   "tone": true,
+   "on": true,
+   "note": "The core's right face reads darker than its front, so the corner shows when both faces carry the same design. Turn it off for even light."
   }
  ],
  "spill": {
