@@ -6,7 +6,7 @@ switch the lighting, save a PNG. No build step: `index.html` plus one folder per
 
 - Pack format and shader: `tryon/FORMAT.md` in the project archive (`booth-system`).
 - Designs are not saved on this host: changes last until the page is reloaded; uploaded images stay in the browser.
-- Deployed on Vercel from this repository (framework: Other, no build command, output directory `.`).
-  Every push to `main` deploys.
+- Live at https://dash0-booth-tryon.vercel.app (Vercel project `dash0-booth-tryon`, framework: Other, no build
+  command, output directory `.`). Every push to `main` deploys to production.
 
 Local preview: `python3 -m http.server 8000` in this folder, then http://localhost:8000.
