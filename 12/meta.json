@@ -1,0 +1,165 @@
+{
+ "name": "12 · Roll-up 850 × 2000 mm",
+ "caption": "Freestanding roll-up banner 850 × 2000 mm · studio, dark grey seamless backdrop · camera at eye height, 7.4 m away",
+ "w": 4200,
+ "h": 2800,
+ "ev": 1.2,
+ "wb": [
+  0.97,
+  1.0,
+  1.05
+ ],
+ "lift": 0.0,
+ "vig": 0.15,
+ "smax": 0.4969857764482498,
+ "bmax": 0.00766726985478215,
+ "slots": [
+  {
+   "key": "front",
+   "label": "Roll-up · print",
+   "mm": [
+    850,
+    2000
+   ],
+   "art": "front.png",
+   "color": "#111215",
+   "floor": false,
+   "note": "Visible print 850 × 2000 mm (print file 850 × 2100 mm: the lowest 100 mm rolls into the cassette). Layout in Figma: 340 × 800 px at 1 px = 2.5 mm."
+  }
+ ],
+ "surfaces": [
+  {
+   "index": 1,
+   "key": "print",
+   "slot": "front",
+   "H": [
+    6.048447690615284,
+    -0.00583512794485622,
+    -2.5117766299078585,
+    -0.04979351609707309,
+    1.6844521471264562,
+    -0.46173125351854805,
+    -0.16597838699024842,
+    -0.010441807901323557,
+    1.0
+   ],
+   "clip": [
+    0.0,
+    0.001,
+    1.0,
+    0.9975
+   ]
+  }
+ ],
+ "presets": [
+  {
+   "label": "Current design",
+   "slots": {
+    "front": "front.png"
+   }
+  },
+  {
+   "label": "12A · Without the headache",
+   "slots": {
+    "front": "ideas/12A.png"
+   }
+  },
+  {
+   "label": "12B · Ship more. Break less.",
+   "slots": {
+    "front": "ideas/12B.png"
+   }
+  },
+  {
+   "label": "12C · Agent0 · on autopilot",
+   "slots": {
+    "front": "ideas/12C.png"
+   }
+  },
+  {
+   "label": "12D · Darkplane · +243%",
+   "slots": {
+    "front": "ideas/12D.png"
+   }
+  },
+  {
+   "label": "12E · SignalStore · every signal",
+   "slots": {
+    "front": "ideas/12E.png"
+   }
+  },
+  {
+   "label": "12F · Spot bugs. Fix faster.",
+   "slots": {
+    "front": "ideas/12F.png"
+   }
+  },
+  {
+   "label": "12G · Because details matter.",
+   "slots": {
+    "front": "ideas/12G.png"
+   }
+  },
+  {
+   "label": "12H · Four products",
+   "slots": {
+    "front": "ideas/12H.png"
+   }
+  },
+  {
+   "label": "12I · 14 days free",
+   "slots": {
+    "front": "ideas/12I.png"
+   }
+  },
+  {
+   "label": "12J · Your AI can’t read",
+   "slots": {
+    "front": "ideas/12J.png"
+   }
+  },
+  {
+   "label": "White print",
+   "slots": {
+    "front": "#f4f4f2"
+   }
+  }
+ ],
+ "spill": {
+  "files": [
+   "spill0.png"
+  ],
+  "layers": [
+   {
+    "key": "front",
+    "slot": "front",
+    "f": 0,
+    "ch": 0,
+    "max": 0.05850824775344133,
+    "knee": 0.002,
+    "c0": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ]
+ },
+ "reflect": {
+  "slot": "front",
+  "surface": 1,
+  "art": "reflect_black.png",
+  "su": [
+   0.016,
+   0.3
+  ],
+  "sv": [
+   0.027,
+   0.4
+  ],
+  "taps": 7,
+  "defSu": 0,
+  "gap": 0.1
+ },
+ "grain": 0.3
+}

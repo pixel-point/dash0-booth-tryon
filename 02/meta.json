@@ -1,0 +1,820 @@
+{
+ "name": "02 · Corner 6 × 3 m",
+ "caption": "Corner booth 6 × 3 m · camera at 1.6 m from the aisle crossing",
+ "w": 4200,
+ "h": 2800,
+ "ev": 1.2,
+ "wb": [
+  0.97,
+  1.0,
+  1.05
+ ],
+ "smax": 4.015559692239761,
+ "bmax": 3.7261211138248442,
+ "slots": [
+  {
+   "key": "back",
+   "label": "Back wall",
+   "mm": [
+    6000,
+    2500
+   ],
+   "art": "back.png",
+   "color": "#ebedef",
+   "note": "From this viewpoint the right third is hidden by the totem."
+  },
+  {
+   "key": "side",
+   "label": "Side wall",
+   "mm": [
+    2900,
+    2500
+   ],
+   "art": "side.png",
+   "color": "#adb8c6",
+   "note": "The 55″ screen on this wall has its own row, “Screen 55″”."
+  },
+  {
+   "key": "screen",
+   "label": "Screen 55″",
+   "mm": [
+    1210,
+    680
+   ],
+   "art": "screen.png",
+   "color": "#10141d",
+   "emissive": true,
+   "note": "Screen on the side wall, self-lit."
+  },
+  {
+   "key": "totem_front",
+   "label": "Totem · front",
+   "mm": [
+    1000,
+    3500
+   ],
+   "art": "totem.png",
+   "color": "#b71f27"
+  },
+  {
+   "key": "totem_side",
+   "label": "Totem · aisle side",
+   "mm": [
+    1000,
+    3500
+   ],
+   "art": "totem.png",
+   "color": "#b71f27",
+   "follows": "totem_front"
+  },
+  {
+   "key": "counter_front",
+   "label": "Counter · front",
+   "mm": [
+    2000,
+    1050
+   ],
+   "art": "counter.png",
+   "color": "#a81b24"
+  },
+  {
+   "key": "counter_end",
+   "label": "Counter · end",
+   "mm": [
+    600,
+    1050
+   ],
+   "art": null,
+   "color": "#a2b7be"
+  },
+  {
+   "key": "counter_top",
+   "label": "Counter · top",
+   "mm": [
+    2000,
+    600
+   ],
+   "art": null,
+   "color": "#f2f2f2",
+   "note": "Colour only: the worktop with its front and end edges."
+  },
+  {
+   "key": "floor",
+   "label": "Carpet",
+   "mm": [
+    6000,
+    3000
+   ],
+   "art": null,
+   "color": "#2c2830",
+   "floor": true,
+   "note": "Colour only: the carpet texture stays."
+  }
+ ],
+ "surfaces": [
+  {
+   "index": 1,
+   "slot": "back",
+   "key": "back_print",
+   "H": [
+    [
+     5.4753473049193335,
+     0.011187584622866968,
+     -2.068423550569042
+    ],
+    [
+     0.7264030910007822,
+     5.985770576841699,
+     -2.7631754625249085
+    ],
+    [
+     1.89167454626332,
+     0.03252779039210699,
+     1.0
+    ]
+   ]
+  },
+  {
+   "index": 2,
+   "slot": "side",
+   "key": "side_print",
+   "H": [
+    [
+     3.257202483301179,
+     0.017699212337663812,
+     -0.5698205000931952
+    ],
+    [
+     -0.3230723643704775,
+     2.351234323080759,
+     -0.8528486445367314
+    ],
+    [
+     -0.8413342124810576,
+     0.009684434424160868,
+     1.0
+    ]
+   ]
+  },
+  {
+   "index": 3,
+   "slot": "totem_front",
+   "key": "totem_front",
+   "H": [
+    [
+     21.08166713650682,
+     -0.06889985600685783,
+     -14.662471300382082
+    ],
+    [
+     1.05933812932128,
+     3.715960953925054,
+     -1.3882518145123584
+    ],
+    [
+     1.8916753395261126,
+     0.0325276433961219,
+     1.0
+    ]
+   ]
+  },
+  {
+   "index": 4,
+   "slot": "totem_side",
+   "key": "totem_right",
+   "H": [
+    [
+     6.98307936818055,
+     -0.03690860533987952,
+     -5.699443786448202
+    ],
+    [
+     -0.4711470148716922,
+     0.46084994920885075,
+     0.32004685638648034
+    ],
+    [
+     -0.8413338379565047,
+     0.009684433987888414,
+     1.0
+    ]
+   ]
+  },
+  {
+   "index": 5,
+   "slot": "counter_front",
+   "key": "counter_front",
+   "H": [
+    [
+     11.717877648221835,
+     0.038885448045617936,
+     -3.5327781660080118
+    ],
+    [
+     -0.8264599832347945,
+     9.457983370911577,
+     -5.427561673951231
+    ],
+    [
+     1.8916757653053757,
+     0.03252783066999384,
+     1.0
+    ]
+   ]
+  },
+  {
+   "index": 6,
+   "slot": "counter_end",
+   "key": "counter_side",
+   "H": [
+    [
+     11.918897910057227,
+     0.007711647645896401,
+     -5.498128496168735
+    ],
+    [
+     0.3675735936910118,
+     3.0908990030448997,
+     -2.0676419409231617
+    ],
+    [
+     -0.8413339425211571,
+     0.00968434076101818,
+     1.0
+    ]
+   ]
+  },
+  {
+   "index": 7,
+   "slot": "floor",
+   "key": "booth_floor",
+   "H": [
+    [
+     -0.5656743922278388,
+     -2.5873965511756127,
+     2.0390207362728416
+    ],
+    [
+     0.9256489096989351,
+     -4.792303158128987,
+     3.0226614394108475
+    ],
+    [
+     -7.914625164534168e-08,
+     -1.8979813035619038,
+     1.0
+    ]
+   ]
+  },
+  {
+   "index": 8,
+   "slot": "screen",
+   "key": "screen",
+   "emissive": true,
+   "H": [
+    [
+     8.374525334681278,
+     0.035230248915918035,
+     -2.0797341359690966
+    ],
+    [
+     -0.30492150783433136,
+     8.635306501183383,
+     -4.185457133929102
+    ],
+    [
+     -0.8413339232864935,
+     0.009683551002140037,
+     1.0
+    ]
+   ]
+  },
+  {
+   "index": 9,
+   "slot": "counter_top",
+   "key": "counter_top",
+   "H": [
+    [
+     4.57018498367791,
+     0.0,
+     -1.3482045701849834
+    ],
+    [
+     0.0,
+     33.33333333333331,
+     -19.6190476190476
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ]
+  }
+ ],
+ "presets": [
+  {
+   "label": "Current design",
+   "slots": {
+    "back": "back.png",
+    "side": "side.png",
+    "totem_front": "totem.png",
+    "totem_side": "totem.png",
+    "counter_front": "counter.png",
+    "counter_end": "#a2b7be"
+   }
+  },
+  {
+   "label": "A · Trace to pattern",
+   "slots": {
+    "back": "ideas/A_back.png",
+    "side": "ideas/A_side.png",
+    "totem_front": "ideas/A_totem.png",
+    "totem_side": "ideas/A_totem.png",
+    "counter_front": "ideas/A_counter.png",
+    "counter_end": "#16181f"
+   }
+  },
+  {
+   "label": "B · Around the corner",
+   "slots": {
+    "back": "ideas/B_back.png",
+    "side": "ideas/B_side.png",
+    "totem_front": "ideas/B_totem.png",
+    "totem_side": "ideas/B_totem.png",
+    "counter_front": "ideas/B_counter.png",
+    "counter_end": "#16181f"
+   }
+  },
+  {
+   "label": "C · Beacon",
+   "slots": {
+    "back": "ideas/C_back.png",
+    "side": "ideas/C_side.png",
+    "totem_front": "ideas/C_totem.png",
+    "totem_side": "ideas/C_totem.png",
+    "counter_front": "ideas/C_counter.png",
+    "counter_end": "#2f5a33"
+   }
+  },
+  {
+   "label": "D · Night trace",
+   "slots": {
+    "back": "ideas/D_back.png",
+    "side": "ideas/D_side.png",
+    "totem_front": "ideas/D_totem.png",
+    "totem_side": "ideas/D_totem.png",
+    "counter_front": "ideas/D_counter.png",
+    "counter_end": "#b71f27"
+   }
+  }
+ ],
+ "glow": {
+  "threshold": 1.0,
+  "grid": 4,
+  "sigmas": [
+   4.0,
+   20.0,
+   80.0
+  ],
+  "weights": [
+   0.1,
+   0.035,
+   0.014
+  ]
+ },
+ "overlays": [
+  {
+   "key": "hosts",
+   "label": "Hosts",
+   "file": "hosts.png",
+   "on": true,
+   "note": "Two hosts in red overalls, behind the counter and to its right. They suit any design."
+  }
+ ],
+ "spill": {
+  "files": [
+   "spill0.png",
+   "spill1.png",
+   "spill2.png",
+   "spill3.png",
+   "spill4.png",
+   "spill5.png",
+   "spill6.png",
+   "spill7.png"
+  ],
+  "layers": [
+   {
+    "slot": "back",
+    "rect": [
+     0.0,
+     0.0,
+     0.25,
+     0.5
+    ],
+    "c0": [
+     0.746113,
+     0.757343,
+     0.772571
+    ],
+    "f": 0,
+    "ch": 0,
+    "knee": 0.002,
+    "max": 0.23972345201468462
+   },
+   {
+    "slot": "back",
+    "rect": [
+     0.25,
+     0.0,
+     0.5,
+     0.5
+    ],
+    "c0": [
+     0.819739,
+     0.830143,
+     0.846381
+    ],
+    "f": 0,
+    "ch": 1,
+    "knee": 0.002,
+    "max": 0.1759936508069038
+   },
+   {
+    "slot": "back",
+    "rect": [
+     0.5,
+     0.0,
+     0.75,
+     0.5
+    ],
+    "c0": [
+     0.808762,
+     0.818346,
+     0.834414
+    ],
+    "f": 0,
+    "ch": 2,
+    "knee": 0.002,
+    "max": 0.061683866241782896
+   },
+   {
+    "slot": "back",
+    "rect": [
+     0.75,
+     0.0,
+     1.0,
+     0.5
+    ],
+    "c0": [
+     0.809876,
+     0.823908,
+     0.840004
+    ],
+    "f": 1,
+    "ch": 0,
+    "knee": 0.002,
+    "max": 0.021325053084477786
+   },
+   {
+    "slot": "back",
+    "rect": [
+     0.0,
+     0.5,
+     0.25,
+     1.0
+    ],
+    "c0": [
+     0.826159,
+     0.595166,
+     0.611933
+    ],
+    "f": 1,
+    "ch": 1,
+    "knee": 0.002,
+    "max": 0.19460000665283206
+   },
+   {
+    "slot": "back",
+    "rect": [
+     0.25,
+     0.5,
+     0.5,
+     1.0
+    ],
+    "c0": [
+     0.825719,
+     0.563533,
+     0.580014
+    ],
+    "f": 1,
+    "ch": 2,
+    "knee": 0.002,
+    "max": 0.17792295397615437
+   },
+   {
+    "slot": "back",
+    "rect": [
+     0.5,
+     0.5,
+     0.75,
+     1.0
+    ],
+    "c0": [
+     0.825846,
+     0.598316,
+     0.615234
+    ],
+    "f": 2,
+    "ch": 0,
+    "knee": 0.002,
+    "max": 0.18015919987654688
+   },
+   {
+    "slot": "back",
+    "rect": [
+     0.75,
+     0.5,
+     1.0,
+     1.0
+    ],
+    "c0": [
+     0.82558,
+     0.560374,
+     0.576493
+    ],
+    "f": 2,
+    "ch": 1,
+    "knee": 0.002,
+    "max": 0.06522587542778252
+   },
+   {
+    "slot": "side",
+    "rect": [
+     0.0,
+     0.0,
+     0.5,
+     0.5
+    ],
+    "c0": [
+     0.390479,
+     0.433393,
+     0.496407
+    ],
+    "f": 2,
+    "ch": 2,
+    "knee": 0.002,
+    "max": 0.08260070150142906
+   },
+   {
+    "slot": "side",
+    "rect": [
+     0.5,
+     0.0,
+     1.0,
+     0.5
+    ],
+    "c0": [
+     0.42441,
+     0.470672,
+     0.538707
+    ],
+    "f": 3,
+    "ch": 0,
+    "knee": 0.002,
+    "max": 0.17380085539615148
+   },
+   {
+    "slot": "side",
+    "rect": [
+     0.0,
+     0.5,
+     0.5,
+     1.0
+    ],
+    "c0": [
+     0.302492,
+     0.345684,
+     0.409414
+    ],
+    "f": 3,
+    "ch": 1,
+    "knee": 0.002,
+    "max": 0.10341672282463313
+   },
+   {
+    "slot": "side",
+    "rect": [
+     0.5,
+     0.5,
+     1.0,
+     1.0
+    ],
+    "c0": [
+     0.298004,
+     0.340398,
+     0.403278
+    ],
+    "f": 3,
+    "ch": 2,
+    "knee": 0.002,
+    "max": 0.15878413945233827
+   },
+   {
+    "slot": "totem_front",
+    "rect": [
+     0.0,
+     0.0,
+     1.0,
+     0.333333
+    ],
+    "c0": [
+     0.578728,
+     0.210299,
+     0.215605
+    ],
+    "f": 4,
+    "ch": 0,
+    "knee": 0.002,
+    "max": 0.04179365880584716
+   },
+   {
+    "slot": "totem_front",
+    "rect": [
+     0.0,
+     0.333333,
+     1.0,
+     0.666667
+    ],
+    "c0": [
+     0.582484,
+     0.217261,
+     0.222525
+    ],
+    "f": 4,
+    "ch": 1,
+    "knee": 0.002,
+    "max": 0.04851439275017381
+   },
+   {
+    "slot": "totem_front",
+    "rect": [
+     0.0,
+     0.666667,
+     1.0,
+     1.0
+    ],
+    "c0": [
+     0.587558,
+     0.227168,
+     0.232339
+    ],
+    "f": 4,
+    "ch": 2,
+    "knee": 0.002,
+    "max": 0.17505687734282022
+   },
+   {
+    "slot": "totem_side",
+    "rect": [
+     0.0,
+     0.0,
+     1.0,
+     0.333333
+    ],
+    "c0": [
+     0.578728,
+     0.210299,
+     0.215605
+    ],
+    "f": 5,
+    "ch": 0,
+    "knee": 0.002,
+    "max": 0.03306223965606093
+   },
+   {
+    "slot": "totem_side",
+    "rect": [
+     0.0,
+     0.333333,
+     1.0,
+     0.666667
+    ],
+    "c0": [
+     0.582484,
+     0.217261,
+     0.222525
+    ],
+    "f": 5,
+    "ch": 1,
+    "knee": 0.002,
+    "max": 0.0780236704776287
+   },
+   {
+    "slot": "totem_side",
+    "rect": [
+     0.0,
+     0.666667,
+     1.0,
+     1.0
+    ],
+    "c0": [
+     0.587558,
+     0.227168,
+     0.232339
+    ],
+    "f": 5,
+    "ch": 2,
+    "knee": 0.002,
+    "max": 0.06193490357121824
+   },
+   {
+    "slot": "counter_front",
+    "rect": [
+     0.0,
+     0.0,
+     0.5,
+     1.0
+    ],
+    "c0": [
+     0.410423,
+     0.041548,
+     0.048027
+    ],
+    "f": 6,
+    "ch": 0,
+    "knee": 0.002,
+    "max": 0.07016078753566742
+   },
+   {
+    "slot": "counter_front",
+    "rect": [
+     0.5,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "c0": [
+     0.415332,
+     0.049534,
+     0.055958
+    ],
+    "f": 6,
+    "ch": 1,
+    "knee": 0.002,
+    "max": 0.07892288529670238
+   },
+   {
+    "slot": "counter_end",
+    "rect": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "c0": [
+     0.361307,
+     0.473532,
+     0.514918
+    ],
+    "f": 6,
+    "ch": 2,
+    "knee": 0.002,
+    "max": 0.050045485531747334
+   },
+   {
+    "slot": "screen",
+    "rect": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "c0": [
+     0.58759,
+     0.573437,
+     0.58287
+    ],
+    "f": 7,
+    "ch": 0,
+    "knee": 0.002,
+    "max": 0.13602161673998833
+   }
+  ]
+ },
+ "lift": 0.0,
+ "vig": 0.15,
+ "strip": {
+  "label": "Base lighting",
+  "spec": "LED strip around the platform",
+  "note": "Turn it off or pick a colour: the strip and its light on the hall floor change at once.",
+  "color": "#fffbfd",
+  "max": 8.008,
+  "knee": 0.002,
+  "face": {
+   "max": 0.32114875909686086,
+   "knee": 0.002
+  }
+ },
+ "spillKeep": 0.1
+}

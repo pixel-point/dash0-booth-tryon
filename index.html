@@ -1,0 +1,1523 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Booth Try-On</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: the photo is the work surface on the left, a column of "smart objects" (one per printed slot) on the right. */
+  :root {
+    --bg: #eceef2;
+    --panel: #ffffff;
+    --raise: #f4f5f8;
+    --line: #d9dce4;
+    --fg: #16181f;
+    --muted: #5d6579;
+    --accent: #4e65b8;
+    --accent-ink: #ffffff;
+    --focus: #4e65b8;
+    --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101217; --panel: #171a21; --raise: #1e222b; --line: #2b303b; --fg: #e6e8ed;
+      --muted: #8f98b2; --accent: #9daff8; --accent-ink: #101217; --focus: #9daff8; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101217; --panel: #171a21; --raise: #1e222b; --line: #2b303b; --fg: #e6e8ed;
+    --muted: #8f98b2; --accent: #9daff8; --accent-ink: #101217; --focus: #9daff8; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 14px; line-height: 1.45;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 32px;
+  }
+  .wrap { max-width: 1480px; margin: 0 auto; display: grid; gap: 16px; }
+  header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+  h1 { font-size: clamp(20px, 2.4vw, 28px); font-weight: 600; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+  .sub { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.01em; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button, .btn {
+    font: 500 13px/1 var(--sans); color: var(--fg); background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; padding: 9px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  }
+  button:hover, .btn:hover { border-color: var(--muted); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  button:focus-visible, .btn:focus-within, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .expo { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+  .expo input { width: 110px; accent-color: var(--accent); }
+  .expo[hidden] { display: none; }
+  .seg { display: inline-flex; }
+  .seg button:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .seg button:last-child { border-top-left-radius: 0; border-bottom-left-radius: 0; margin-left: -1px; }
+
+  .booths { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .booths[hidden] { display: none; }
+  .booths button { padding: 7px 11px; font-size: 12.5px; }
+  .booths button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+
+  .main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+  @media (max-width: 980px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+  .stage { position: relative; border-radius: 12px; overflow: hidden; background: #0d0e12; aspect-ratio: 3 / 2; max-width: 100%; }
+  .stage img, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .stage canvas { opacity: 0; transition: opacity .25s ease; cursor: crosshair; }
+  .stage.ready canvas { opacity: 1; }
+  .stage.drop canvas { cursor: copy; }
+  .stage.zoomed canvas { cursor: grab; }
+  .stage.panning canvas { cursor: grabbing; }
+  .zoom { position: absolute; right: 10px; bottom: 10px; display: flex; gap: 4px; opacity: 0; transition: opacity .2s ease; }
+  .stage.ready .zoom { opacity: 1; }
+  .zoom button { padding: 6px 9px; font: 500 12px/1 var(--mono); background: rgba(16, 18, 23, .78); color: #e6e8ed; border-color: rgba(255, 255, 255, .14); }
+  .zoom button:hover { background: rgba(30, 34, 43, .92); }
+  .tag {
+    position: absolute; pointer-events: none; transform: translate(12px, 12px); font: 500 12px/1 var(--sans);
+    background: rgba(16, 18, 23, .82); color: #e6e8ed; padding: 6px 8px; border-radius: 6px; white-space: nowrap;
+  }
+  .status { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 24px); font: 12px/1.3 var(--mono); color: #e6e8ed;
+    background: rgba(16, 18, 23, .7); padding: 6px 8px; border-radius: 6px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .presets[hidden] { display: none; }
+  .presets .lbl { font-size: 12px; color: var(--muted); margin-right: 4px; }
+  .presets button { padding: 7px 10px; font-size: 12.5px; }
+  .hint { color: var(--muted); font-size: 13px; max-width: 80ch; margin: 0; }
+  .savenote { font: 12px/1.4 var(--mono); color: var(--muted); margin: 0; min-height: 1.4em; }
+  .savenote[data-state="error"], .savenote[data-state="upload"] { color: var(--fg); }
+  .hint kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; background: var(--panel); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .panel h2 { font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0; padding: 14px 16px 10px; }
+  .rows { display: grid; }
+  .row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 4px 12px; padding: 12px 16px; border-top: 1px solid var(--line); position: relative; }
+  .row[aria-current="true"] { background: var(--raise); box-shadow: inset 3px 0 0 var(--accent); }
+  .row.dragover { background: var(--raise); box-shadow: inset 0 0 0 2px var(--accent); }
+  .thumb { grid-row: span 2; width: 52px; height: 52px; border-radius: 6px; border: 1px solid var(--line); background: var(--raise) center / cover no-repeat; }
+  .name { font-weight: 500; display: flex; justify-content: space-between; gap: 8px; min-width: 0; }
+  .name button.reset { padding: 3px 7px; font-size: 11px; border-radius: 6px; color: var(--muted); }
+  .spec { font: 11.5px/1.4 var(--mono); color: var(--muted); }
+  .ctrls { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+  .ctrls .btn { padding: 6px 9px; font-size: 12px; }
+  .ctrls input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
+  .swatch { width: 34px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+  .follow { font-size: 12px; color: var(--muted); display: inline-flex; gap: 5px; align-items: center; }
+  .note { grid-column: 2; font-size: 12px; color: var(--muted); }
+  .row.layer .thumb { background-color: #2a2d35; background-size: contain; }
+  .thumb[data-dim="true"] { opacity: .35; }
+  .thumb.tone { background: linear-gradient(100deg, #cfd3db 0 57%, #757a84 57% 100%); }
+  .thumb[data-off="true"] { background: repeating-linear-gradient(135deg, var(--raise) 0 6px, var(--line) 6px 7px); }
+  .foot { padding: 12px 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+
+  .sheet { position: fixed; inset: 0; background: rgba(8, 9, 12, .78); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); z-index: 20; }
+  .sheet figure { margin: 0; display: grid; gap: 10px; max-width: min(1400px, 100%); }
+  .sheet img { width: 100%; border-radius: 8px; }
+  .sheet figcaption { color: #e6e8ed; font-size: 13px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .toast { position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 9px 14px; border-radius: 8px; font-size: 13px; z-index: 30; max-width: calc(100% - 32px); }
+  @media (prefers-reduced-motion: reduce) { .stage canvas { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="booths" id="booths" hidden></div>
+      <h1 id="title">Booth try-on</h1>
+      <div class="sub" id="caption"></div>
+    </div>
+    <div class="actions">
+      <label class="expo" for="ev">Exposure <input id="ev" type="range" min="-1" max="1" step="0.05" value="0"></label>
+      <div class="seg" role="group" aria-label="Design view">
+        <button id="v-figma" type="button" aria-pressed="true" title="Designs pixel for pixel in their Figma colours; the render adds only soft shading">As in Figma</button>
+        <button id="v-render" type="button" aria-pressed="false" title="Designs lit by the scene, as in the render">Render</button>
+      </div>
+      <label class="expo" for="shadeK" id="shadeK-l">Shading <input id="shadeK" type="range" min="0" max="1" step="0.05" value="0.6"></label>
+      <button id="showAll" type="button" aria-pressed="false">Show surfaces</button>
+      <button id="resetAll" type="button">Reset all</button>
+      <button id="saveView" type="button" hidden>Save zoomed view</button>
+      <button id="copy" type="button" title="Copy the frame to the clipboard as a full-size PNG (when zoomed in, the close-up on screen)">Copy PNG</button>
+      <button id="save" type="button" class="primary">Save PNG</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div style="display:grid; gap:12px; min-width:0">
+      <div class="stage" id="stage">
+        <img id="fallback" alt="Photo render of the booth in an exhibition hall">
+        <canvas id="cv" width="2100" height="1400" aria-label="Booth preview. Click a surface to select it, or drop an image onto it."></canvas>
+        <div class="tag" id="tag" hidden></div>
+        <div class="zoom" role="group" aria-label="Zoom">
+          <button id="z-out" type="button" aria-label="Zoom out">−</button>
+          <button id="z-fit" type="button" aria-label="Fit the whole frame">1×</button>
+          <button id="z-in" type="button" aria-label="Zoom in">+</button>
+        </div>
+        <div class="status" id="status">Loading the lighting template…</div>
+      </div>
+      <div class="presets" id="presets" hidden></div>
+      <p class="savenote" id="saveState" aria-live="polite"></p>
+      <p class="hint">Drop an image straight onto a wall in the frame, or select a surface and paste from the clipboard: <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>V</kbd>. In Figma, select the frame and choose <em>Copy as PNG</em> (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>C</kbd>). The image stretches over the whole surface, so export it in the surface's proportions; for a sharp 4K PNG of the whole booth 2× is enough (1 px = 1.25 mm), for close-ups export at 4×. Zoom into the frame with <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + scroll, a pinch or the + button, drag to move around, double-click to see it all again; <em>Save zoomed view</em> saves that close-up at the full 4K size. Transparent parts of a PNG take the surface colour. <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> undoes the last change to the design, <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>⇧</kbd>+<kbd>Z</kbd> brings it back.</p>
+    </div>
+
+    <aside class="panel" aria-labelledby="surfacesTitle">
+      <h2 id="surfacesTitle">Surfaces</h2>
+      <div class="rows" id="rows"></div>
+      <div class="foot">Light, shadows and optics come from ray tracing. New artwork and lighting colours only recompose the frame, so everything updates instantly.</div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const stage = $('stage'), tag = $('tag'), statusEl = $('status');
+  const FIXED_UNITS = 6;   // plate + shade (one array), spill layers (array), id, bloom, floor detail, glow
+  const GLOW_UNIT = 5;
+  const MAX_SPILL = 32;
+
+  // Per-booth state; rebuilt by loadBooth().
+  let B = null;
+  let cv = $('cv'), gl = null;
+  let evOffset = 0, showAll = false, view = 1, shadeK = 0.6, loadToken = 0;
+
+  function toast(msg) {
+    const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3200);
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+  function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; }
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (_) { return null; } }
+
+  // ---------- GL helpers
+  const VS = `#version 300 es
+  in vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }`;
+
+  // The fragment shaders are generated per booth: surface and slot counts come from meta.json,
+  // and samplers can only be picked with constant indices, hence the generated if-chain.
+  // surfX() is shared by the frame shader and the glow pass, so both see the same pre-tone-map value.
+  // sp (meta.spill): layer i lives in channel ch of file f, all files one texture array; the sum is
+  // sum L_i * (c_i - c0_i), L decoded from its log encoding, d = c - c0 set per render from the chosen art.
+  // meta.reflect (reflSlot = its slot key): the layers of that slot also sum into gRefL (their light for a white zone)
+  // and gRefD (their zone-colour term), so the plate pass can swap the zone colour for the mirrored art.
+  function spillSrc(sp, reflSlot) {
+    if (!sp) return '  float gRefL; vec3 gRefD;\n  vec3 spillSum(vec2 p){ gRefL = 0.0; gRefD = vec3(0.0); return vec3(0.0); }';
+    const n = sp.layers.length, files = [...new Set(sp.layers.map((l) => l.f))];
+    const fetch = files.map((f) => `vec3 g${f} = texture(uSpill, vec3(p, ${f}.0)).rgb;`).join(' ');
+    const terms = sp.layers.map((l, i) => {
+      const L = `uSpK[${i}] * (exp(g${l.f}.${'rgb'[l.ch]} * uSpL[${i}]) - 1.0)`;
+      return reflSlot && l.slot === reflSlot
+        ? `{ float L = ${L}; s += L * uSpD[${i}]; gRefL += L; gRefD += L * uSpD[${i}]; }`
+        : `s += ${L} * uSpD[${i}];`;
+    }).join('\n    ');
+    return `  uniform highp sampler2DArray uSpill; uniform vec3 uSpD[${n}]; uniform float uSpL[${n}], uSpK[${n}];
+  float gRefL; vec3 gRefD;
+  vec3 spillSum(vec2 p){
+    vec3 s = vec3(0.0); gRefL = 0.0; gRefD = vec3(0.0); ${fetch}
+    ${terms}
+    return s;
+  }`;
+  }
+  function surfSrc(NS, NL, NA, sp, rf) {
+    const samplers = Array.from({ length: NA }, (_, t) => 'uT' + t);
+    const chain = samplers.map((n, t) => `if (t == ${t}) return textureGrad(${n}, uv, gx, gy);`).join('\n    ');
+    return `#version 300 es
+  precision highp float; precision highp int; precision highp sampler2DArray;
+  uniform highp sampler2DArray uPS;   // slice 0 the plate, slice 1 the shade, 2.. the overlays' shadow maps
+  uniform sampler2D uId, uFloor${NA ? ', ' + samplers.join(', ') : ''};
+  uniform mat3 uH[${NS}]; uniform int uSlot[${NS}]; uniform int uEmS[${NS}];
+  uniform vec4 uClip[${NS}];   // meta.surfaces[].clip: the visible part of the layout (u0, v0, u1, v1), default 0 0 1 1
+  uniform vec3 uCol[${NL}]; uniform int uMode[${NL}]; uniform int uTex[${NL}];
+  uniform float uEV, uSmax, uFoot; uniform vec3 uWB; uniform vec2 uOut, uStep; uniform int uSpOn;
+  uniform float uVig, uLift;   // meta.vig: x *= 1 - vig * r^2.4; meta.lift: tone map lift + (0.997 - lift) * ACES(x)
+  uniform float uRef[${NS}];   // per face: its slot's 80th percentile of the shade luminance (the Figma view's 1.0)
+  // meta.surfaces[].tone: a face's brightness relative to the front (side and inner faces of LED walls, which the render
+  // lights evenly), applied while the overlay with tone: true is on; 1 otherwise. A factor on the displayed (linear)
+  // colour in both views, after the tone map, so a white LED face reads darker too; the live glow is not changed.
+  uniform float uTone[${NS}];
+  out vec4 o;
+${spillSrc(sp, rf ? rf.slot : null)}
+  vec3 toLin(vec3 c){ return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c)); }
+  vec3 toSrgb(vec3 x){ return mix(12.92 * x, 1.055 * pow(x, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), x)); }
+  vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
+  vec2 hm(int k, vec2 p){ vec3 q = uH[k] * vec3(p, 1.0); return q.xy / q.z; }
+  vec3 gAlb; float gL;   // the face's art or colour as chosen (linear) and its light relative to the slot, for the Figma view
+  ivec2 gQ;              // the pack texel the light, plate and strip are read from (one of the chosen face, at edges)
+  int idAt(ivec2 q){ return int(texelFetch(uId, clamp(q, ivec2(0), textureSize(uId, 0) - 1), 0).r * 255.0 + 0.5); }
+  // distance in pack texels from p to the edge of face k's layout rectangle (uv 0..1, or its clip: the part not
+  // hidden by an object in front along a straight edge, as booth 12's rail and slot), positive inside
+  float edgeD(int k, vec2 p, vec2 t){
+    vec2 uv = hm(k, p), ux = hm(k, p + vec2(t.x, 0.0)) - uv, uy = hm(k, p + vec2(0.0, t.y)) - uv;
+    float gu = max(length(vec2(ux.x, uy.x)), 1e-9), gv = max(length(vec2(ux.y, uy.y)), 1e-9);
+    vec4 c = uClip[k];
+    return min(min(uv.x - c.x, c.z - uv.x) / gu, min(uv.y - c.y, c.w - uv.y) / gv);
+  }
+  // The face at p. id.png has one face per texel; where a face's own edge runs through the texels around p, its
+  // rectangle decides, so outlines stay sharp between pack texels (zoom, the 2 x 2 subpixels). A face whose edge
+  // passes close by and that covers p is the outline in front; a nearest face that does not reach p gives way.
+  int faceAt(vec2 p, out ivec2 q){
+    ivec2 isz = textureSize(uId, 0); vec2 t = 1.0 / vec2(isz), f = p * vec2(isz);
+    q = clamp(ivec2(floor(f)), ivec2(0), isz - 1);
+    int id0 = idAt(q);
+    ivec2 b = ivec2(floor(f - 0.5));
+    ivec2 o[4] = ivec2[4](ivec2(0), ivec2(1, 0), ivec2(0, 1), ivec2(1, 1));
+    int c[4]; bool same = true;
+    for (int i = 0; i < 4; i++) { c[i] = idAt(b + o[i]); same = same && c[i] == id0; }
+    if (same) return id0;
+    float d0 = id0 > 0 && id0 <= ${NS} ? edgeD(id0 - 1, p, t) : -1e9;
+    if (d0 >= -0.05 && d0 < 1.5) return id0;
+    for (int i = 0; i < 4; i++) {
+      if (c[i] == id0 || c[i] == 0 || c[i] > ${NS}) continue;
+      float d = edgeD(c[i] - 1, p, t);
+      if (d >= 0.0 && d < 1.5) { q = clamp(b + o[i], ivec2(0), isz - 1); return c[i]; }
+    }
+    if (id0 > 0 && d0 < -0.05 && d0 > -1.5)
+      for (int i = 0; i < 4; i++) {
+        if (c[i] == id0 || c[i] > ${NS} || (c[i] > 0 && edgeD(c[i] - 1, p, t) < 0.0)) continue;
+        q = clamp(b + o[i], ivec2(0), isz - 1); return c[i];
+      }
+    return id0;
+  }
+  vec4 art(int t, vec2 uv, vec2 gx, vec2 gy){
+    ${chain}
+    return vec4(1.0);
+  }
+  // position p in the frame (0..1, y down): surface index k (-1 on the plate), its slot s and the value x before the tone map
+  void surfX(vec2 p, out int k, out int s, out vec3 x){
+    ivec2 sp; int id = faceAt(p, sp); gQ = sp;
+    k = (id == 0 || id > ${NS}) ? -1 : id - 1;
+    s = k < 0 ? -1 : uSlot[k];
+    x = vec3(0.0); gAlb = vec3(0.0); gL = 1.0;
+    if (s < 0) return;
+    vec2 uv = hm(k, p);
+    vec2 gx = (hm(k, p + vec2(uStep.x, 0.0)) - uv) * uFoot;   // texture footprint: one subpixel (0 for the glow)
+    vec2 gy = (hm(k, p + vec2(0.0, uStep.y)) - uv) * uFoot;
+    vec2 cuv = clamp(uv, 0.0, 1.0);
+    vec3 base = toLin(uCol[s]), alb;
+    if (uMode[s] == 2) alb = base * textureGrad(uFloor, cuv, gx, gy).r * 2.0;
+    else if (uMode[s] == 1 || uTex[s] < 0) alb = base;
+    else { vec4 a = art(uTex[s], cuv, gx, gy); alb = mix(base, a.rgb, a.a); }
+    gAlb = alb;
+    vec3 S = pow(texelFetch(uPS, ivec3(sp, 1), 0).rgb, vec3(2.2)) * uSmax;
+    // Figma view: the shade's luminance over a 5 x 5 pack-pixel neighbourhood of the same face (9 taps), so its grain
+    // never lands on the art; an LED face shows its picture at full level
+    if (uEmS[k] == 0) {
+      ivec2 hi = textureSize(uId, 0) - 1; float ls = 0.0, ws = 0.0;
+      for (int j = -1; j <= 1; j++) for (int i = -1; i <= 1; i++) {
+        ivec2 q = clamp(sp + 2 * ivec2(i, j), ivec2(0), hi);
+        if (int(texelFetch(uId, q, 0).r * 255.0 + 0.5) != id) continue;
+        ls += dot(pow(texelFetch(uPS, ivec3(q, 1), 0).rgb, vec3(2.2)), vec3(0.2126, 0.7152, 0.0722)); ws += 1.0;
+      }
+      gL = ws > 0.0 ? ls * uSmax / ws / uRef[k] : 1.0;
+    }
+    if (uSpOn == 1 && uEmS[k] == 0) S = max(S + spillSum(p), 0.0);   // an LED face's own light never takes spill
+    x = alb * S * exp2(uEV) * uWB;
+    float r = length(p * 2.0 - 1.0) / sqrt(2.0);
+    x *= 1.0 - uVig * pow(r, 2.4);
+  }
+`;
+  }
+  // meta.reflect: the glossy floor's reflection of one slot's surface follows the chosen art. A plate pixel p below that
+  // surface maps through the surface's homography to uv with v > 1 (the plane continued below its base); the mirror
+  // image of art point (u, 2 + gap - v) lands there (gap: meta.reflect.gap, for a surface standing above the floor). The art is averaged around that point with a blur that grows with the
+  // distance below the base (su, sv: [at the base, per unit of v], in fractions of the art), current and default art
+  // alike, and the slot's spill layers' light (gRefL) carries it, in place of their zone colour (gRefD). The default
+  // design therefore changes nothing.
+  function reflSrc(rf) {
+    if (!rf) return '  vec3 reflDelta(vec2 p){ return vec3(0.0); }';
+    const T = Math.max(3, Math.min(15, rf.taps | 0 || 7));
+    return `
+  uniform sampler2D uRefDef; uniform vec3 uRefDefCol; uniform vec2 uRefSU, uRefSV; uniform int uRefOn;
+  uniform float uRefDefSU;   // meta.reflect.defSu: the plate keeps the default art's reflection blurred this much more along u
+  uniform float uRefGap;     // meta.reflect.gap: twice the surface's height above the floor, in units of its height (the mirror line sits at v = 1 + gap / 2)
+  vec3 refAlb(vec2 q, vec2 gx, vec2 gy){
+    const int s = ${rf.slotIdx};
+    vec3 base = toLin(uCol[s]);
+    if (uMode[s] == 1 || uTex[s] < 0) return base;
+    vec4 a = art(uTex[s], q, gx, gy); return mix(base, a.rgb, a.a);
+  }
+  vec3 reflDelta(vec2 p){
+    if (uRefOn == 0 || gRefL <= 0.0) return vec3(0.0);
+    vec2 uv = hm(${rf.k}, p);
+    float d = uv.y - 1.0 - uRefGap;
+    if (d <= 0.0 || d >= 1.0 || uv.x < -0.05 || uv.x > 1.05) return vec3(0.0);
+    float m = smoothstep(0.0, 0.004, d) * smoothstep(-0.03, 0.01, uv.x) * smoothstep(-0.03, 0.01, 1.0 - uv.x);
+    float sU = uRefSU.x + uRefSU.y * d, sV = uRefSV.x + uRefSV.y * d;
+    vec2 gx = vec2(2.5 * sU, 0.0), gy = vec2(0.0, 3.0 * sV / ${T}.0);
+    vec2 gxD = vec2(2.5 * sqrt(sU * sU + uRefDefSU * uRefDefSU), 0.0);
+    vec3 aC = vec3(0.0), aD = vec3(0.0); float ws = 0.0;
+    vec3 dBase = toLin(uRefDefCol);
+    for (int i = 0; i < ${T}; i++) {
+      float t = float(i) / ${T - 1}.0 * 2.0 - 1.0;            // taps over +-1.5 sigma along v
+      float w = exp(-1.125 * t * t);
+      vec2 q = vec2(clamp(uv.x, 0.0, 1.0), clamp(1.0 - d + 1.5 * t * sV, 0.0, 1.0));
+      aC += w * refAlb(q, gx, gy);
+      vec4 a = textureGrad(uRefDef, q, gxD, gy); aD += w * mix(dBase, a.rgb, a.a);
+      ws += w;
+    }
+    return m * (gRefL * (aC - aD) / ws - gRefD);
+  }`;
+  }
+  function fragSrc(NS, NL, NA, sp, rf) {
+    return surfSrc(NS, NL, NA, sp, rf) + reflSrc(rf) + `
+  uniform sampler2D uBloom, uGlow;
+  uniform float uBmax; uniform vec3 uAccent; uniform int uHi, uAll, uGlowOn;
+  uniform vec3 uStripCol; uniform float uStripL, uStripK, uStripFL, uStripFK;
+  // uView 1 (As in Figma): the faces show their art's own sRGB pixels in perspective, times the face's light relative
+  // to its slot (gL, clamped to 1 so a print never reads brighter than in Figma) blended by uShadeK; no tone map,
+  // exposure, white balance, spill, bloom or grain on them. 0: the rendered view.
+  uniform int uView, uSS; uniform float uShadeK;
+  uniform float uSpKeep;  // meta.spillKeep: the share of the plate's light a darker design always leaves (default 0)
+  uniform float uGrain;   // meta.grain: the display grain's strength (default 1; 12's smooth studio backdrop: 0.3)
+  uniform vec4 uVw;   // the part of the frame on screen: top-left (0..1) and frame units per output pixel (zoom, pan)
+  // meta.overlays[].shade: the light an overlay's object takes away (or adds) around it, a linear factor
+  // grey / 255 * shadeMax on the light there; uShOn[i] is shadeMax while the layer shows, 0 when it is off
+  uniform int uShN; uniform float uShOn[4];
+  float shadowF(vec2 p){ float f = 1.0; for (int i = 0; i < uShN; i++) if (uShOn[i] > 0.0) f *= texture(uPS, vec3(p, float(2 + i))).r * uShOn[i]; return f; }
+  float hash(vec2 p){ p = fract(p * vec2(443.897, 441.423)); p += dot(p, p.yx + 19.19); return fract((p.x + p.y) * p.x); }
+  // inverse of aces() below 0.98, so light can be added to the finished plate before its tone map
+  vec3 acesInv(vec3 y){ y = clamp(y, 0.0, 0.98); vec3 a = 2.51 - 2.43 * y, b = 0.03 - 0.59 * y; return (-b + sqrt(b * b + 0.56 * a * y)) / (2.0 * a); }
+  void main(){
+    int ox = int(gl_FragCoord.x), oy = int(uOut.y) - 1 - int(gl_FragCoord.y);
+    vec3 acc = vec3(0.0); float flatW = 0.0, wq = 1.0 / float(uSS * uSS);
+    for (int dy = 0; dy < uSS; dy++) for (int dx = 0; dx < uSS; dx++) {
+      vec2 p = uVw.xy + (vec2(ox, oy) + (vec2(dx, dy) + 0.5) / float(uSS)) * uVw.zw;
+      vec3 glow = uGlowOn == 1 ? texture(uGlow, p).rgb : vec3(0.0);
+      int k, s; vec3 x, c;
+      surfX(p, k, s, x);
+      ivec2 sp = gQ;
+      float sf = uShN > 0 ? shadowF(p) : 1.0;
+      if (s < 0) {
+        c = uVw.z * float(textureSize(uId, 0).x) < 0.99 ? texture(uPS, vec3(p, 0.0)).rgb : texelFetch(uPS, ivec3(sp, 0), 0).rgb;
+        // meta.strip: the strip's light for a white strip, log-encoded in id.png green, times the chosen colour
+        float sg = uStripL > 0.0 ? texelFetch(uId, sp, 0).g : 0.0;
+        vec3 xs = sg > 0.0 ? uStripK * (exp(sg * uStripL) - 1.0) * uStripCol * uWB : vec3(0.0);
+        // meta.spill: radiance as rendered, so exposure, white balance and vignette are applied here
+        float r = length(p * 2.0 - 1.0) / sqrt(2.0);
+        vec3 spl = spillSum(p); spl += reflDelta(p);
+        xs += spl * exp2(uEV) * uWB * (1.0 - uVig * pow(r, 2.4));
+        if (xs != vec3(0.0) || sf != 1.0) {
+          vec3 Xp = acesInv((toLin(c) - uLift) / (0.997 - uLift));
+          // meta.spillKeep (k > 0): a design darker than the default takes its light back out of the plate, but never
+          // more than 1 - k of what the plate has there: where a spill estimate overshoots, the floor went black with
+          // coloured fringes (02, 1 Nov). The whole delta is scaled, so its hue stays. 0 (default): as before.
+          float t = 1.0;
+          if (uSpKeep > 0.0) for (int ch = 0; ch < 3; ch++) if (xs[ch] < 0.0) t = min(t, (1.0 - uSpKeep) * Xp[ch] / -xs[ch]);
+          c = toSrgb(uLift + aces(max((Xp + xs * max(t, 0.0)) * sf, 0.0)) * (0.997 - uLift));
+        }
+        if (uGlowOn == 1) { vec3 pl = toLin(c); c = toSrgb(clamp(pl + (1.0 - pl) * aces(glow), 0.0, 1.0)); }
+      } else if (uView == 1) {
+        c = toSrgb(clamp(gAlb * mix(1.0, clamp(gL, 0.0, 1.0) * sf, uShadeK) * uTone[k], 0.0, 1.0)); flatW += wq;
+        if (uAll == 1 || s == uHi) c = mix(c, uAccent, uAll == 1 ? 0.45 : 0.28);
+      } else {
+        x = x * sf + pow(texture(uBloom, p).rgb, vec3(2.2)) * uBmax + glow;
+        // meta.strip.face: the strip's light and bloom on the faces next to it, log-encoded in id.png blue
+        float fg = uStripFL > 0.0 ? texelFetch(uId, sp, 0).b : 0.0;
+        if (fg > 0.0) x += uStripFK * (exp(fg * uStripFL) - 1.0) * uStripCol * uWB;
+        x = uLift + aces(max(x, 0.0)) * (0.997 - uLift) * uTone[k];
+        c = toSrgb(x);
+        if (uAll == 1 || s == uHi) c = mix(c, uAccent, uAll == 1 ? 0.45 : 0.28);
+      }
+      acc += c;
+    }
+    vec3 col = acc * wq;
+    vec2 g = gl_FragCoord.xy;
+    float n = (hash(g) + hash(g + 17.3) + hash(g + 41.7) - 1.5) * 2.0;
+    float lum = dot(col, vec3(0.3333));
+    col += n * (0.006 + 0.011 * (1.0 - lum)) * (1.0 - flatW) * uGrain;
+    o = vec4(clamp(col, 0.0, 1.0), 1.0);
+  }`;
+  }
+  // Glow pass 1 (meta.glow): max(x - threshold, 0) on emissive surfaces, box-averaged over grid x grid pack
+  // subpixels. Rows run top-down, like the pack images, so the result samples with the same coordinates.
+  function emisSrc(NS, NL, NA, sp) {
+    return surfSrc(NS, NL, NA, sp) + `
+  uniform int uEm[${NS}]; uniform int uGrid; uniform float uThr;
+  void main(){
+    ivec2 base = ivec2(gl_FragCoord.xy) * uGrid;
+    vec3 b = vec3(0.0);
+    for (int dy = 0; dy < uGrid; dy++) for (int dx = 0; dx < uGrid; dx++) {
+      int k, s; vec3 x;
+      surfX((vec2(base + ivec2(dx, dy)) + 0.5) / vec2(textureSize(uId, 0)), k, s, x);
+      if (s >= 0 && uEm[k] == 1) b += max(x - uThr, 0.0);
+    }
+    o = vec4(b / float(uGrid * uGrid), 1.0);
+  }`;
+  }
+  // Glow pass 2: one direction of a gaussian blur (sigma in glow texels), scaled by uW.
+  const BLUR = `#version 300 es
+  precision highp float; precision highp int;
+  uniform sampler2D uSrc; uniform ivec2 uDir; uniform float uSigma, uW; uniform int uRad;
+  out vec4 o;
+  void main(){
+    ivec2 c = ivec2(gl_FragCoord.xy), hi = textureSize(uSrc, 0) - 1;
+    vec3 acc = vec3(0.0); float ws = 0.0;
+    for (int i = -uRad; i <= uRad; i++) {
+      float w = exp(-0.5 * float(i * i) / (uSigma * uSigma));
+      acc += w * texelFetch(uSrc, clamp(c + uDir * i, ivec2(0), hi), 0).rgb; ws += w;
+    }
+    o = vec4(acc / ws * uW, 1.0);
+  }`;
+
+  // meta.overlays: RGBA layers (people, props) drawn over the finished frame, 2 x 2 subpixels per pixel with straight
+  // alpha averaged as premultiplied, blended in sRGB like a normal layer. They get the same grain as the frame below.
+  const OVL = `#version 300 es
+  precision highp float; precision highp int;
+  uniform sampler2D uOv; uniform vec2 uOut; uniform int uSS; uniform vec4 uVw;
+  out vec4 o;
+  float hash(vec2 p){ p = fract(p * vec2(443.897, 441.423)); p += dot(p, p.yx + 19.19); return fract((p.x + p.y) * p.x); }
+  void main(){
+    int ox = int(gl_FragCoord.x), oy = int(uOut.y) - 1 - int(gl_FragCoord.y);
+    vec4 acc = vec4(0.0);
+    ivec2 hi = textureSize(uOv, 0) - 1;
+    for (int dy = 0; dy < uSS; dy++) for (int dx = 0; dx < uSS; dx++) {
+      vec2 f = (uVw.xy + (vec2(ox, oy) + (vec2(dx, dy) + 0.5) / float(uSS)) * uVw.zw) * vec2(textureSize(uOv, 0)) - 0.5;
+      ivec2 b = ivec2(floor(f)); vec2 w = f - vec2(b);   // bilinear on premultiplied texels (0 at texel centres)
+      vec4 a0 = texelFetch(uOv, clamp(b, ivec2(0), hi), 0), a1 = texelFetch(uOv, clamp(b + ivec2(1, 0), ivec2(0), hi), 0);
+      vec4 a2 = texelFetch(uOv, clamp(b + ivec2(0, 1), ivec2(0), hi), 0), a3 = texelFetch(uOv, clamp(b + ivec2(1, 1), ivec2(0), hi), 0);
+      a0.rgb *= a0.a; a1.rgb *= a1.a; a2.rgb *= a2.a; a3.rgb *= a3.a;
+      acc += mix(mix(a0, a1, w.x), mix(a2, a3, w.x), w.y);
+    }
+    acc /= float(uSS * uSS);
+    if (acc.a <= 0.0) discard;
+    vec2 g = gl_FragCoord.xy;
+    float n = (hash(g) + hash(g + 17.3) + hash(g + 41.7) - 1.5) * 2.0;
+    float lum = dot(acc.rgb / acc.a, vec3(0.3333));
+    o = vec4(acc.rgb + acc.a * n * (0.006 + 0.011 * (1.0 - lum)), acc.a);
+  }`;
+
+  function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+  function tex(unit, src, { srgb = false, mip = false, filter = 'linear' } = {}) {
+    const t = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, srgb ? gl.SRGB8_ALPHA8 : gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, src);
+    const f = filter === 'nearest' ? gl.NEAREST : gl.LINEAR;
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mip ? gl.LINEAR_MIPMAP_LINEAR : f);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, f);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (mip) { gl.generateMipmap(gl.TEXTURE_2D); if (B.aniso) gl.texParameterf(gl.TEXTURE_2D, B.aniso.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(16, gl.getParameter(B.aniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT))); }
+    return t;
+  }
+  // A texture array from same-sized images, one slice each (plate + shade; the spill files).
+  function texArray(unit, imgs, filter) {
+    const t = gl.createTexture(), w = imgs[0].width, h = imgs[0].height;
+    gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D_ARRAY, t);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+    gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, w, h, imgs.length);
+    imgs.forEach((im, z) => {
+      if (im.width !== w || im.height !== h) throw new Error('the template layers differ in size.');
+      gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, z, w, h, 1, gl.RGBA, gl.UNSIGNED_BYTE, im);
+    });
+    const f = filter === 'nearest' ? gl.NEAREST : gl.LINEAR;
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, f);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, f);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return t;
+  }
+  // Pack images are data and are read raw; art (convert = true) goes through its colour profile to sRGB, so a Display P3
+  // export from Figma shows the colours Figma shows.
+  async function bitmap(src, convert = false) {
+    let blob = src;
+    if (!(src instanceof Blob)) { const r = await fetch(src); if (!r.ok) throw new Error(src + ' not found.'); blob = await r.blob(); }
+    return createImageBitmap(blob, { colorSpaceConversion: convert ? 'default' : 'none', premultiplyAlpha: 'none' });
+  }
+  // Limit uploads to what the GPU takes; keep a thumbnail for the row.
+  async function prepImage(fileOrUrl) {
+    let bmp;
+    if (fileOrUrl instanceof Blob && fileOrUrl.type === 'image/svg+xml') {
+      const url = URL.createObjectURL(fileOrUrl); const im = new Image(); im.src = url; await im.decode();
+      const c = document.createElement('canvas'); c.width = Math.min(B.maxTex, im.naturalWidth * 4 || 2400); c.height = Math.round(c.width * (im.naturalHeight / im.naturalWidth || 1));
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url); bmp = await createImageBitmap(c);
+    } else bmp = await bitmap(fileOrUrl, true);
+    if (bmp.width > B.maxTex || bmp.height > B.maxTex) {
+      const k = B.maxTex / Math.max(bmp.width, bmp.height);
+      bmp = await createImageBitmap(bmp, { resizeWidth: Math.floor(bmp.width * k), resizeHeight: Math.floor(bmp.height * k), resizeQuality: 'high' });
+    }
+    const tc = document.createElement('canvas'); const tk = 104 / Math.max(bmp.width, bmp.height);
+    tc.width = Math.max(1, Math.round(bmp.width * tk)); tc.height = Math.max(1, Math.round(bmp.height * tk));
+    tc.getContext('2d').drawImage(bmp, 0, 0, tc.width, tc.height);
+    return { bmp, thumb: tc.toDataURL() };
+  }
+  // Pack images (defaults and presets) are decoded once per booth.
+  function packImage(file) {
+    if (!B.cache[file]) B.cache[file] = prepImage(B.dir + '/' + file);
+    return B.cache[file];
+  }
+
+  // ---------- slot state
+  const canImage = (i) => B.slots[i].texUnit >= 0;
+  function setArt(i, bmp) {
+    const st = B.state[i];
+    if (st.tex) gl.deleteTexture(st.tex);
+    st.tex = tex(FIXED_UNITS + B.slots[i].texUnit, bmp, { srgb: true, mip: true });
+  }
+  function followers(i) {
+    const key = B.slots[i].key;
+    return B.slots.map((s, j) => (s.follows === key && $('fl-' + j) && $('fl-' + j).checked) ? j : -1).filter((j) => j >= 0);
+  }
+  function setThumb(i) {
+    const th = $('th-' + i), st = B.state[i];
+    th.style.backgroundColor = st.color;
+    th.style.backgroundImage = st.mode === 0 && st.thumb ? `url(${st.thumb})` : '';
+    $('c-' + i).value = st.color;
+  }
+  function markPreset(k) { B.preset = k; document.querySelectorAll('#presets button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === k))); }
+
+  // src records where a slot's image came from, so the design can be saved and restored:
+  // { f: 'pack file' } for the booth's own layouts, { a: 'asset id' } for an uploaded image.
+  let imgSerial = 0;
+  function setSlotImage(i, img, warn, src) {
+    if (!canImage(i)) return;
+    const st = B.state[i];
+    setArt(i, img.bmp); st.mode = 0; st.img = img; st.thumb = img.thumb; st.src = src || null; st.serial = ++imgSerial; setThumb(i);
+    const s = B.slots[i], want = s.mm[0] / s.mm[1], got = img.bmp.width / img.bmp.height;
+    if (warn && Math.abs(Math.log(got / want)) > 0.04) toast(`${s.label}: ${s.mm[0]} × ${s.mm[1]} mm. The image has different proportions, so it is stretched.`);
+  }
+  function setSlotColor(i, hex) {
+    const st = B.state[i];
+    st.color = hex; st.mode = B.slots[i].floor ? 2 : 1; st.src = null; setThumb(i);
+  }
+
+  async function applyFile(i, file) {
+    const token = loadToken, b = B;
+    try {
+      statusEl.hidden = false; statusEl.textContent = 'Placing the image…';
+      const img = await prepImage(file);
+      if (token !== loadToken) return;
+      pushUndo();
+      const targets = [i, ...followers(i)];
+      for (const j of targets) setSlotImage(j, img, j === i, null);
+      statusEl.hidden = true; markPreset(-1); select(i, false);
+      storeUpload(b, targets, file, img);
+    } catch (err) { statusEl.hidden = false; statusEl.textContent = 'Could not read the file as an image. Try PNG or JPG.'; }
+  }
+  function applyColor(i, hex) {
+    for (const j of [i, ...followers(i)]) setSlotColor(j, hex);
+    markPreset(-1); render(); queueSave();
+  }
+  async function resetSlot(i) {
+    const s = B.slots[i];
+    B.state[i].color = s.color;
+    if (s.art && canImage(i)) setSlotImage(i, await packImage(s.art), false, { f: s.art });
+    else setSlotColor(i, s.color);
+  }
+  async function applyPreset(k) {
+    const p = B.meta.presets[k], token = loadToken;
+    statusEl.hidden = false; statusEl.textContent = 'Loading the variant…';
+    try {
+      const res = await Promise.all(B.slots.map(async (s, i) => {
+        const v = p.slots[s.key];
+        if (v === undefined) return [i, null, null];
+        if (typeof v === 'string' && v.startsWith('#')) return [i, v, null];
+        return [i, v, canImage(i) ? await packImage(v) : null];
+      }));
+      if (token !== loadToken) return;
+      for (const [i, v, img] of res) {
+        if (v === null || (img === null && !v.startsWith('#'))) await resetSlot(i);
+        else if (img === null) setSlotColor(i, v);
+        else { B.state[i].color = B.slots[i].color; setSlotImage(i, img, false, { f: v }); }
+      }
+      if (B.strip && p.strip) setStrip(p.strip === 'off' ? { on: false } : { on: true, color: p.strip });
+      statusEl.hidden = true; markPreset(k); render(); queueSave();
+    } catch (err) { statusEl.textContent = 'The variant did not load: ' + err.message; }
+  }
+
+  // ---------- saving: one shared document per booth (tryon/<dir>), uploaded images as artifact assets
+  const caps = { db: null, assets: null };
+  const capsReady = (async () => {
+    try {
+      if (window.claude && window.claude.use) {
+        const [db, assets] = await Promise.all([window.claude.use('db'), window.claude.use('assets')]);
+        caps.db = db; caps.assets = assets;
+      }
+    } catch (_) { /* no persistence in this view */ }
+  })();
+  const SAVE_TEXT = {
+    on: 'The design saves automatically; everyone you share this page with sees it.',
+    saving: 'Saving…',
+    saved: 'Saved. Everyone you share this page with sees the design.',
+    nofiles: 'Colours and variants are saved, but your own images cannot be saved here: that needs edit access.',
+    upload: 'The image was not saved and will stay only until you reload. Try a PNG or JPG under 20 MB.',
+    readonly: 'You have view-only access: changes last only until you reload.',
+    error: 'Could not save. The changes exist only in this tab for now; try again a little later.',
+    off: 'Changes are not saved in this view.',
+  };
+  // outside Claude (the offline copy, a static host) nothing saves and nothing needs saying
+  function setSave(k) { const el = $('saveState'); el.hidden = !window.claude; el.textContent = SAVE_TEXT[k]; el.dataset.state = k; }
+
+  function snapshotState(b) {
+    const slots = {};
+    b.slots.forEach((s, i) => {
+      const st = b.state[i], fl = b.follow[s.key];
+      const v = { m: st.mode, c: st.color };
+      if (st.mode === 0) { if (st.src && st.src.a) v.a = st.src.a; else if (st.src && st.src.f) v.f = st.src.f; else v.m = -1; }
+      if (fl !== undefined) v.follow = fl;
+      slots[s.key] = v;
+    });
+    const snap = { v: 1, slots, preset: b.preset };
+    if (b.strip) snap.strip = { on: b.strip.on, c: b.strip.color };
+    if (b.ovl) snap.overlays = Object.fromEntries(b.ovl.items.map((o) => [o.key, o.on]));
+    return snap;
+  }
+  // ---------- undo / redo: Ctrl/⌘+Z steps back, Ctrl/⌘+Shift+Z or Ctrl+Y forward. Each change records the design as
+  // it was before it (per booth, in this tab); a run of input events on one control, such as dragging in a colour
+  // picker, counts as one change.
+  const UNDO_MAX = 60;
+  function designState() {
+    return {
+      slots: B.state.map((st) => ({ mode: st.mode, color: st.color, img: st.img, src: st.src })),
+      follow: { ...B.follow },
+      strip: B.strip ? { on: B.strip.on, color: B.strip.color } : null,
+      ovl: B.ovl ? B.ovl.items.map((o) => o.on) : null,
+      preset: B.preset,
+    };
+  }
+  function pushUndo(tag) {
+    if (!B || !B.ready) return;
+    const now = Date.now();
+    if (tag && tag === B.undoTag && now - B.undoAt < 1200) { B.undoAt = now; return; }
+    (B.undo = B.undo || []).push(designState());
+    if (B.undo.length > UNDO_MAX) B.undo.shift();
+    B.redo = []; B.undoTag = tag || null; B.undoAt = now;
+  }
+  function applyDesign(d) {
+    d.slots.forEach((v, i) => {
+      const st = B.state[i], src = v.src || (v.img && v.img.src) || null;
+      if (v.mode === 0 && v.img && canImage(i)) {
+        st.color = v.color;
+        if (st.mode !== 0 || st.img !== v.img) setSlotImage(i, v.img, false, src);
+        else { st.src = src || st.src; setThumb(i); }
+      } else setSlotColor(i, v.color);
+    });
+    B.follow = { ...d.follow };
+    B.slots.forEach((s, i) => { const fl = $('fl-' + i); if (fl && typeof B.follow[s.key] === 'boolean') fl.checked = B.follow[s.key]; });
+    if (B.strip && d.strip) setStrip(d.strip);
+    if (B.ovl && d.ovl) B.ovl.items.forEach((o, j) => { if (o.on !== d.ovl[j]) setOverlay(o, d.ovl[j]); });
+    markPreset(d.preset); render(); queueSave();
+  }
+  function undo(forward) {
+    if (!B || !B.ready) return;
+    const from = forward ? (B.redo = B.redo || []) : (B.undo = B.undo || []);
+    const to = forward ? (B.undo = B.undo || []) : (B.redo = B.redo || []);
+    if (!from.length) { toast(forward ? 'Nothing to redo.' : 'Nothing to undo.'); return; }
+    to.push(designState()); applyDesign(from.pop()); B.undoTag = null;
+  }
+  document.addEventListener('keydown', (e) => {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    const k = (e.key || '').toLowerCase();
+    const z = e.code === 'KeyZ' || k === 'z', y = e.code === 'KeyY' || k === 'y';   // e.code: any keyboard layout
+    if (!z && !y) return;
+    const t = e.target;
+    if (t && (t.isContentEditable || t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && /^(text|search|number|email|url|password)$/i.test(t.type)))) return;
+    e.preventDefault();
+    undo(y || e.shiftKey);
+  });
+  function queueSave(b = B) {
+    if (!caps.db || !b || !b.ready || b.readonly) return;
+    clearTimeout(b.saveTimer);
+    b.dirty = true;
+    if (b === B) setSave('saving');
+    b.saveTimer = setTimeout(() => flushSave(b), 600);
+  }
+  async function flushSave(b) {
+    clearTimeout(b.saveTimer);
+    if (b.saving) { b.saveAgain = true; return; }
+    b.saving = true; b.dirty = false;
+    try {
+      await caps.db.doc('tryon/' + b.dir).set(snapshotState(b));
+      if (b === B) setSave(b.uploadFailed ? 'upload' : (caps.assets ? 'saved' : 'nofiles'));
+    } catch (err) {
+      if (err && err.code === 'invalid_argument') { b.readonly = true; if (b === B) setSave('readonly'); }
+      else if (b === B) setSave('error');
+    }
+    b.saving = false;
+    if (b.saveAgain) { b.saveAgain = false; flushSave(b); }
+  }
+  const OK_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'];
+  async function storeUpload(b, targets, file, img) {
+    if (!caps.db) return;
+    if (!caps.assets) { queueSave(b); return; }
+    const serials = targets.map((j) => b.state[j].serial);
+    let blob = file;
+    const cap = file.type === 'image/svg+xml' ? 2e6 : 19.5e6;
+    if (!OK_TYPES.includes(file.type) || file.size > cap) {
+      const c = document.createElement('canvas'); c.width = img.bmp.width; c.height = img.bmp.height;
+      c.getContext('2d').drawImage(img.bmp, 0, 0);
+      blob = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
+    }
+    try {
+      const up = await caps.assets.upload(blob);
+      b.cache['a:' + up.id] = Promise.resolve(img); img.src = { a: up.id };
+      targets.forEach((j, n) => { if (b.state[j].serial === serials[n]) b.state[j].src = { a: up.id }; });
+      b.uploadFailed = false;
+    } catch (err) { b.uploadFailed = true; }
+    queueSave(b);
+  }
+  function assetImage(id) {
+    const k = 'a:' + id;
+    if (!B.cache[k]) B.cache[k] = (async () => { const r = await fetch('/_blob/' + id); if (!r.ok) throw new Error('file missing'); return prepImage(await r.blob()); })();
+    return B.cache[k];
+  }
+  // Apply the saved design over the defaults. Returns how many saved images could not be loaded.
+  async function restoreSaved(b) {
+    let snap;
+    try { snap = await caps.db.doc('tryon/' + b.dir).get(); } catch (_) { return 0; }
+    if (!snap.exists) return 0;
+    const d = snap.data() || {}, saved = d.slots || {};
+    let missing = 0;
+    for (let i = 0; i < b.slots.length; i++) {
+      const s = b.slots[i], v = saved[s.key];
+      if (!v) continue;
+      if (typeof v.follow === 'boolean') { b.follow[s.key] = v.follow; const fl = $('fl-' + i); if (fl) fl.checked = v.follow; }
+      if (v.m === 0 && canImage(i) && (v.a || v.f)) {
+        try {
+          const img = v.a ? await assetImage(v.a) : await packImage(v.f);
+          b.state[i].color = v.c || s.color; setSlotImage(i, img, false, v.a ? { a: v.a } : { f: v.f });
+        } catch (_) { missing++; }
+      } else if ((v.m === 1 || v.m === 2) && /^#[0-9a-f]{6}$/i.test(v.c || '')) setSlotColor(i, v.c);
+    }
+    if (b.strip && d.strip && /^#[0-9a-f]{6}$/i.test(d.strip.c || '')) setStrip({ on: d.strip.on !== false, color: d.strip.c });
+    if (b.ovl && d.overlays) b.ovl.items.forEach((o) => { if (typeof d.overlays[o.key] === 'boolean') setOverlay(o, d.overlays[o.key]); });
+    markPreset(typeof d.preset === 'number' ? d.preset : -1);
+    return missing;
+  }
+
+  // ---------- rows
+  function buildRows() {
+    const host = $('rows'); host.innerHTML = '';
+    B.slots.forEach((s, i) => {
+      const r = document.createElement('div');
+      r.className = 'row'; r.id = 'row-' + i; r.tabIndex = -1;
+      const img = canImage(i);
+      const leader = s.follows ? B.slots.find((x) => x.key === s.follows) : null;
+      const px = [Math.round(s.mm[0] / 2.5), Math.round(s.mm[1] / 2.5)];
+      const note = s.note || (!img && !s.floor ? 'Colour only here.' : '');
+      r.innerHTML = `
+        <div class="thumb" id="th-${i}"></div>
+        <div class="name"><span>${esc(s.label)}</span><button type="button" class="reset" id="rs-${i}">Reset</button></div>
+        <div class="spec">${s.mm[0]} × ${s.mm[1]} mm${img ? ` · ${px[0]} × ${px[1]} px` : ''}</div>
+        <div class="ctrls">
+          ${img ? `<label class="btn" for="f-${i}">Image…<input type="file" id="f-${i}" accept="image/png,image/jpeg,image/webp,image/svg+xml"></label>` : ''}
+          <input class="swatch" type="color" id="c-${i}" aria-label="Colour: ${esc(s.label)}">
+          ${leader ? `<label class="follow" for="fl-${i}"><input type="checkbox" id="fl-${i}" checked> Same as “${esc(leader.label)}”</label>` : ''}
+        </div>
+        ${note ? `<div class="note">${esc(note)}</div>` : ''}`;
+      host.appendChild(r);
+      r.addEventListener('click', (e) => { if (!e.target.closest('input,label,button')) select(i); });
+      const f = $('f-' + i);
+      if (f) f.addEventListener('change', () => { if (f.files[0]) applyFile(i, f.files[0]); f.value = ''; });
+      const fl = $('fl-' + i);
+      if (fl) fl.addEventListener('change', () => { pushUndo(); B.follow[s.key] = fl.checked; queueSave(); });
+      $('c-' + i).addEventListener('input', (e) => { pushUndo('c' + i); select(i, false); applyColor(i, e.target.value); });
+      $('rs-' + i).addEventListener('click', async () => { pushUndo(); await resetSlot(i); markPreset(-1); render(); queueSave(); });
+      r.addEventListener('dragover', (e) => { e.preventDefault(); r.classList.add('dragover'); });
+      r.addEventListener('dragleave', () => r.classList.remove('dragover'));
+      r.addEventListener('drop', (e) => {
+        e.preventDefault(); r.classList.remove('dragover');
+        const file = imageFile(e.dataTransfer); if (!file) return;
+        if (!canImage(i)) { toast(s.floor ? 'The floor takes a colour only.' : 'This surface takes a colour only.'); return; }
+        applyFile(i, file);
+      });
+    });
+  }
+  // meta.strip: a light, not a surface. Its own row after the surfaces: colour and on/off.
+  function setStrip(v) {
+    Object.assign(B.strip, v);
+    const th = $('th-strip');
+    th.style.backgroundColor = B.strip.on ? B.strip.color : '';
+    th.style.boxShadow = B.strip.on ? `inset 0 -10px 14px -6px rgba(255,255,255,.55)` : '';
+    th.dataset.off = String(!B.strip.on);
+    $('c-strip').value = B.strip.color; $('on-strip').checked = B.strip.on;
+  }
+  function buildStripRow() {
+    const s = B.meta.strip; if (!s) return;
+    const r = document.createElement('div');
+    r.className = 'row light'; r.id = 'row-strip';
+    r.innerHTML = `
+      <div class="thumb" id="th-strip"></div>
+      <div class="name"><span>${esc(s.label)}</span><button type="button" class="reset" id="rs-strip">Reset</button></div>
+      <div class="spec">${esc(s.spec || 'Light')}</div>
+      <div class="ctrls">
+        <input class="swatch" type="color" id="c-strip" aria-label="Colour: ${esc(s.label)}">
+        <label class="follow" for="on-strip"><input type="checkbox" id="on-strip"> On</label>
+      </div>
+      ${s.note ? `<div class="note">${esc(s.note)}</div>` : ''}`;
+    $('rows').appendChild(r);
+    $('c-strip').addEventListener('input', (e) => { pushUndo('c-strip'); setStrip({ on: true, color: e.target.value }); render(false); queueSave(); });
+    $('on-strip').addEventListener('change', (e) => { pushUndo(); setStrip({ on: e.target.checked }); render(false); queueSave(); });
+    $('rs-strip').addEventListener('click', () => { pushUndo(); setStrip({ on: true, color: s.color }); render(false); queueSave(); });
+    setStrip({});
+  }
+  function buildOverlayRows() {
+    if (!B.ovl) return;
+    B.ovl.items.forEach((o) => {
+      const r = document.createElement('div');
+      r.className = 'row layer'; r.id = 'row-ov-' + o.key;
+      r.innerHTML = `
+        <div class="thumb${o.tone ? ' tone' : ''}" id="th-ov-${esc(o.key)}"></div>
+        <div class="name"><span>${esc(o.label)}</span></div>
+        <div class="spec">${esc(o.spec || (o.tone ? 'Shading on the faces' : 'Layer over the frame'))}</div>
+        <div class="ctrls"><label class="follow" for="ov-${esc(o.key)}"><input type="checkbox" id="ov-${esc(o.key)}"> ${o.tone ? 'On' : 'Show'}</label></div>
+        ${o.note ? `<div class="note">${esc(o.note)}</div>` : ''}`;
+      $('rows').appendChild(r);
+      $('ov-' + o.key).addEventListener('change', (e) => { pushUndo(); setOverlay(o, e.target.checked); render(!!o.tone); queueSave(); });
+      setOverlay(o, o.on);
+    });
+  }
+  // Variants (meta.presets): several mock-ups of one booth. Hidden for now ("several mock-ups for one booth are not
+  // needed yet", 1 Nov); the presets stay in the packs, SHOW_PRESETS = true brings the row back.
+  const SHOW_PRESETS = false;
+  function buildPresets() {
+    const host = $('presets'), list = SHOW_PRESETS ? (B.meta.presets || []) : [];
+    host.innerHTML = ''; host.hidden = !list.length;
+    if (!list.length) return;
+    const l = document.createElement('span'); l.className = 'lbl'; l.textContent = 'Variants'; host.appendChild(l);
+    list.forEach((p, k) => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = p.label; b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => { pushUndo(); applyPreset(k); }); host.appendChild(b);
+    });
+  }
+  function select(i, scroll = true) {
+    B.selected = i;
+    B.slots.forEach((_, j) => $('row-' + j).setAttribute('aria-current', j === i ? 'true' : 'false'));
+    if (scroll && window.matchMedia('(max-width: 980px)').matches) $('row-' + i).scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    render();
+  }
+
+  // ---------- spill (meta.spill): the light each zone of a surface throws follows the mean colour of its art
+  const LIN = Float32Array.from({ length: 256 }, (_, v) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
+  // Per image and rect: sums of the linear colour times alpha and of (1 - alpha) over the full-size pixels, so the
+  // mean matches the c0 the pack was built with (a downscaled canvas would average in sRGB). One read per image;
+  // texture uploads need CORS-clean images, so this can read them too.
+  function artStats(img, rects) {
+    const st = img.stats || (img.stats = {});
+    const todo = rects.filter((r) => !st[r.join(',')]);
+    if (!todo.length) return st;
+    const b = img.bmp, k = Math.min(1, Math.sqrt(16e6 / (b.width * b.height)));
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(b.width * k)); c.height = Math.max(1, Math.round(b.height * k));
+    const x = c.getContext('2d', { willReadFrequently: true });
+    x.drawImage(b, 0, 0, c.width, c.height);
+    const { width: w, height: h } = c, d = x.getImageData(0, 0, w, h).data;
+    for (const r of todo) {
+      const x0 = Math.min(w - 1, Math.round(r[0] * w)), x1 = Math.max(x0 + 1, Math.min(w, Math.round(r[2] * w)));
+      const y0 = Math.min(h - 1, Math.round(r[1] * h)), y1 = Math.max(y0 + 1, Math.min(h, Math.round(r[3] * h)));
+      let s0 = 0, s1 = 0, s2 = 0, sb = 0;
+      for (let y = y0; y < y1; y++) for (let o = (y * w + x0) * 4, e = (y * w + x1) * 4; o < e; o += 4) {
+        const a = d[o + 3] / 255;
+        s0 += LIN[d[o]] * a; s1 += LIN[d[o + 1]] * a; s2 += LIN[d[o + 2]] * a; sb += 1 - a;
+      }
+      st[r.join(',')] = { s: [s0, s1, s2], sb, n: (x1 - x0) * (y1 - y0) };
+    }
+    return st;
+  }
+  // mean linear colour of a slot over rect [u0, v0, u1, v1] (fractions of the art, v down): art over the base colour
+  function slotMean(i, rect) {
+    const st = B.state[i], base = hexToRgb(st.color).map((c) => LIN[Math.round(c * 255)]);
+    if (st.mode !== 0 || !st.img) return base;
+    const r = rect || [0, 0, 1, 1], m = artStats(st.img, B.spill.rects[i] || [r])[r.join(',')];
+    return [0, 1, 2].map((c) => (m.s[c] + base[c] * m.sb) / m.n);
+  }
+  function spillUniforms() {
+    const sp = B.spill;
+    if (!sp) return;
+    const key = B.state.map((st) => st.mode + st.color + (st.mode === 0 ? st.serial : '')).join('|');
+    if (key === sp.key) return;
+    sp.key = key;
+    const d = new Float32Array(sp.layers.length * 3);
+    sp.layers.forEach((l, j) => {
+      const i = B.slotIndex[l.slot], c0 = l.c0 || [0, 0, 0];
+      const c = i === undefined ? c0 : slotMean(i, l.rect);
+      for (let k = 0; k < 3; k++) d[j * 3 + k] = c[k] - c0[k];
+    });
+    gl.useProgram(B.main.prog); gl.uniform3fv(sp.uD, d);
+  }
+
+  // withGlow = false skips the glow passes for changes that cannot move it (hover, surface highlight).
+  function render(withGlow = true) {
+    if (!gl || !B || !B.ready) return;
+    B.slots.forEach((s, i) => { if (s.texUnit >= 0) { gl.activeTexture(gl.TEXTURE0 + FIXED_UNITS + s.texUnit); gl.bindTexture(gl.TEXTURE_2D, B.state[i].tex || B.blank); } });
+    const NL = B.slots.length, cols = new Float32Array(NL * 3), modes = new Int32Array(NL);
+    B.state.forEach((st, i) => { cols.set(hexToRgb(st.color), i * 3); modes[i] = st.mode; });
+    const toneOn = !!(B.ovl && B.ovl.items.some((o) => o.tone && o.on));
+    const tones = new Float32Array(B.meta.surfaces.length).fill(1);
+    if (toneOn) B.meta.surfaces.forEach((s) => { if (typeof s.tone === 'number' && s.tone > 0 && s.tone <= 2) tones[s.index - 1] = s.tone; });
+    for (const P of [B.main, B.glow && B.glow.emis].filter(Boolean)) {
+      gl.useProgram(P.prog);
+      gl.uniform3fv(P.col, cols); gl.uniform1iv(P.mode, modes); gl.uniform1f(P.ev, B.meta.ev + evOffset);
+      gl.uniform1fv(P.tone, tones);
+    }
+    if (B.glow && withGlow) drawGlow(B.glow);
+    spillUniforms();
+    gl.useProgram(B.main.prog);
+    gl.uniform1i(B.U.hi, B.hover); gl.uniform1i(B.U.all, showAll ? 1 : 0); gl.uniform1i(B.U.view, view); gl.uniform1f(B.U.shadeK, shadeK);
+    const shOn = new Float32Array(4);
+    if (B.ovl) B.ovl.items.forEach((o) => { if (o.shL >= 0 && o.on && o.tex) shOn[o.shL] = o.shadeMax > 0 && o.shadeMax <= 8 ? o.shadeMax : 1; });
+    gl.uniform1fv(B.U.shOn, shOn);
+    gl.uniform3fv(B.U.strip, B.strip && B.strip.on ? hexToRgb(B.strip.color).map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)) : [0, 0, 0]);
+    const acc = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+    gl.uniform3fv(B.U.accent, hexToRgb(/^#[0-9a-f]{6}$/i.test(acc) ? acc : '#4e65b8'));
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    drawOverlays();
+  }
+  // Overlays borrow the first art unit for their pass; render() rebinds the art before the next frame.
+  function drawOverlays() {
+    const list = B.ovl ? B.ovl.items.filter((o) => o.on && o.tex) : [];
+    if (!list.length) return;
+    gl.useProgram(B.ovl.prog);
+    gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.activeTexture(gl.TEXTURE0 + FIXED_UNITS);
+    for (const o of list) { gl.bindTexture(gl.TEXTURE_2D, o.tex); gl.drawArrays(gl.TRIANGLES, 0, 3); }
+    gl.disable(gl.BLEND);
+  }
+  function loadOverlay(o) {
+    const b = B;
+    if (!o.loading) o.loading = (async () => {
+      const bmp = await bitmap(b.dir + '/' + o.file);
+      if (b !== B) return;
+      if (bmp.width !== b.meta.w || bmp.height !== b.meta.h) console.warn(`overlay ${o.file}: ${bmp.width} x ${bmp.height}, the pack is ${b.meta.w} x ${b.meta.h}`);
+      o.tex = tex(FIXED_UNITS, bmp, { filter: 'nearest' });
+      const tc = document.createElement('canvas'), tk = 104 / Math.max(bmp.width, bmp.height);
+      tc.width = Math.round(bmp.width * tk); tc.height = Math.round(bmp.height * tk);
+      tc.getContext('2d').drawImage(bmp, 0, 0, tc.width, tc.height);
+      const th = $('th-ov-' + o.key); if (th) th.style.backgroundImage = `url(${tc.toDataURL()})`;
+    })().catch(() => { o.loading = null; if (b === B) toast(`The “${o.label}” layer did not load.`); });
+    return o.loading;
+  }
+  function setOverlay(o, on) {
+    o.on = on;
+    const cb = $('ov-' + o.key), th = $('th-ov-' + o.key);
+    if (cb) cb.checked = on;
+    if (th) th.dataset.dim = String(!on);
+    if (on && !o.tex && o.file) loadOverlay(o).then(() => render(false));
+  }
+
+  // ---------- live glow around emissive surfaces (LED walls, screens): follows the chosen art and colour
+  function glowTarget(w, h) {
+    const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + GLOW_UNIT); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA16F, w, h);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (!ok) throw new Error('glow target');
+    return { t, fb };
+  }
+  // Returns null (no glow) when the pack has none or this GPU cannot render to half-float textures.
+  function setupGlow(meta, NS, NL, NA, slotIndex) {
+    const g = meta.glow, em = new Int32Array(NS);
+    meta.surfaces.forEach((s) => { const sl = meta.slots[slotIndex[s.slot]]; if (s.emissive || (sl && sl.emissive)) em[s.index - 1] = 1; });
+    if (!g || !em.some(Boolean) || !gl.getExtension('EXT_color_buffer_float')) return null;
+    try {
+      const k = g.grid || 4, w = Math.floor(meta.w / k), h = Math.floor(meta.h / k);
+      const E = glowTarget(w, h), T = glowTarget(w, h), G = glowTarget(w, h);
+      const emis = surfProgram(emisSrc(NS, NL, NA, B.spill), meta, NS, NA);
+      gl.uniform1i(gl.getUniformLocation(emis.prog, 'uSpOn'), 0);   // spill is 0 on emissive faces
+      gl.uniform1iv(gl.getUniformLocation(emis.prog, 'uEm'), em);
+      gl.uniform1i(gl.getUniformLocation(emis.prog, 'uGrid'), k);
+      gl.uniform1f(gl.getUniformLocation(emis.prog, 'uThr'), g.threshold);
+      gl.uniform1f(gl.getUniformLocation(emis.prog, 'uFoot'), 0.0);
+      const blur = link(BLUR); gl.useProgram(blur);
+      gl.uniform1i(gl.getUniformLocation(blur, 'uSrc'), GLOW_UNIT);
+      const U = {}; for (const n of ['uDir', 'uSigma', 'uW', 'uRad']) U[n] = gl.getUniformLocation(blur, n);
+      return { w, h, emis, blur, U, E, T, G, passes: g.sigmas.map((sg, i) => [sg / k, g.weights[i]]) };
+    } catch (err) { return null; }
+  }
+  function drawGlow(G) {
+    gl.useProgram(G.emis.prog);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, G.E.fb); gl.viewport(0, 0, G.w, G.h);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.useProgram(G.blur);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, G.G.fb); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.activeTexture(gl.TEXTURE0 + GLOW_UNIT); gl.blendFunc(gl.ONE, gl.ONE);
+    for (const [sigma, w] of G.passes) {
+      gl.uniform1f(G.U.uSigma, sigma); gl.uniform1i(G.U.uRad, Math.min(64, Math.ceil(4 * sigma)));
+      gl.disable(gl.BLEND); gl.bindFramebuffer(gl.FRAMEBUFFER, G.T.fb); gl.bindTexture(gl.TEXTURE_2D, G.E.t);
+      gl.uniform2i(G.U.uDir, 1, 0); gl.uniform1f(G.U.uW, 1); gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.enable(gl.BLEND); gl.bindFramebuffer(gl.FRAMEBUFFER, G.G.fb); gl.bindTexture(gl.TEXTURE_2D, G.T.t);
+      gl.uniform2i(G.U.uDir, 0, 1); gl.uniform1f(G.U.uW, w); gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+    gl.disable(gl.BLEND); gl.bindTexture(gl.TEXTURE_2D, G.G.t);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.viewport(0, 0, B.OUT[0], B.OUT[1]);
+  }
+
+  function link(fs) {
+    const prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs));
+    gl.bindAttribLocation(prog, 0, 'p');
+    gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    return prog;
+  }
+  // A program built on surfSrc() with its per-booth uniforms set; the per-render ones are looked up.
+  function surfProgram(fs, meta, NS, NA) {
+    const prog = link(fs); gl.useProgram(prog);
+    [['uPS', 0], ['uSpill', 1], ['uId', 2], ['uFloor', 4]].forEach(([n, k]) => gl.uniform1i(gl.getUniformLocation(prog, n), k));
+    for (let t = 0; t < NA; t++) gl.uniform1i(gl.getUniformLocation(prog, 'uT' + t), FIXED_UNITS + t);
+    // homographies: row-major H (3 rows of 3, or 9 numbers) maps normalised screen (x right, y down) to uv;
+    // GLSL wants column-major
+    const hs = new Float32Array(NS * 9);
+    meta.surfaces.forEach((s) => { const h = s.H.flat(); hs.set([h[0], h[3], h[6], h[1], h[4], h[7], h[2], h[5], h[8]], (s.index - 1) * 9); });
+    gl.uniformMatrix3fv(gl.getUniformLocation(prog, 'uH'), false, hs);
+    const cl = new Float32Array(NS * 4);
+    for (let i = 0; i < NS; i++) cl.set([0, 0, 1, 1], i * 4);
+    meta.surfaces.forEach((s) => { if (Array.isArray(s.clip) && s.clip.length === 4) cl.set(s.clip, (s.index - 1) * 4); });
+    gl.uniform4fv(gl.getUniformLocation(prog, 'uClip'), cl);
+    const num = (v, lo, hi, d) => (typeof v === 'number' && v >= lo && v <= hi ? v : d);
+    gl.uniform1f(gl.getUniformLocation(prog, 'uVig'), num(meta.vig, 0, 1, 0.28));
+    gl.uniform1f(gl.getUniformLocation(prog, 'uLift'), num(meta.lift, 0, 0.1, 0.012));
+    gl.uniform1iv(gl.getUniformLocation(prog, 'uSlot'), B.surfSlot);
+    gl.uniform1iv(gl.getUniformLocation(prog, 'uEmS'), B.surfEm);
+    gl.uniform1iv(gl.getUniformLocation(prog, 'uTex'), new Int32Array(B.slots.map((s) => s.texUnit)));
+    gl.uniform1f(gl.getUniformLocation(prog, 'uSmax'), meta.smax);
+    gl.uniform3fv(gl.getUniformLocation(prog, 'uWB'), meta.wb);
+    gl.uniform2f(gl.getUniformLocation(prog, 'uOut'), B.OUT[0], B.OUT[1]);
+    gl.uniform1f(gl.getUniformLocation(prog, 'uFoot'), 1);
+    return { prog, col: gl.getUniformLocation(prog, 'uCol'), mode: gl.getUniformLocation(prog, 'uMode'), ev: gl.getUniformLocation(prog, 'uEV'), tone: gl.getUniformLocation(prog, 'uTone') };
+  }
+
+  // The Figma view's 1.0 per face: the 80th percentile of the shade luminance over all faces of its slot, read from the
+  // pack at quarter size (so a slot split into several faces stays continuous across them).
+  function shadeRefs(shade, idb, meta, NS) {
+    const w = Math.max(1, Math.round(meta.w / 4)), h = Math.max(1, Math.round(meta.h / 4));
+    const read = (im, smooth) => {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingEnabled = smooth;
+      x.drawImage(im, 0, 0, w, h); return x.getImageData(0, 0, w, h).data;
+    };
+    const sd = read(shade, true), id = read(idb, false), dec = new Float32Array(256);
+    for (let i = 0; i < 256; i++) dec[i] = Math.pow(i / 255, 2.2);
+    const vals = B.slots.map(() => []);
+    for (let i = 0; i < w * h; i++) {
+      const k = id[i * 4] - 1; if (k < 0 || k >= NS) continue;
+      const s = B.surfSlot[k]; if (s < 0) continue;
+      vals[s].push((0.2126 * dec[sd[i * 4]] + 0.7152 * dec[sd[i * 4 + 1]] + 0.0722 * dec[sd[i * 4 + 2]]) * meta.smax);
+    }
+    const ref = vals.map((v) => { if (!v.length) return 1; v.sort((a, b) => a - b); return Math.max(1e-4, v[Math.floor(v.length * 0.8)]); });
+    return new Float32Array(Array.from({ length: NS }, (_, k) => (B.surfSlot[k] >= 0 ? ref[B.surfSlot[k]] : 1)));
+  }
+
+  // ---------- booth loading
+  function freshCanvas(w, h) {
+    if (gl) { const lose = gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext(); }
+    gl = null;
+    const c = document.createElement('canvas'); c.id = 'cv'; c.width = w; c.height = h;
+    c.setAttribute('aria-label', cv.getAttribute('aria-label'));
+    cv.replaceWith(c); cv = c; bindCanvas();
+  }
+
+  async function loadBooth(dir) {
+    const token = ++loadToken;
+    if (B && B.dirty) flushSave(B);
+    stage.classList.remove('ready'); statusEl.hidden = false; statusEl.textContent = 'Loading the lighting template…';
+    document.querySelectorAll('#booths button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.dir === dir)));
+    store('tryon.booth', dir);
+    try {
+      const mr = await fetch(dir + '/meta.json');
+      if (!mr.ok) throw new Error('missing file ' + dir + '/meta.json.');
+      const meta = await mr.json();
+      if (token !== loadToken) return;
+      $('title').textContent = meta.name || ('Booth ' + dir);
+      $('caption').textContent = meta.caption || '';
+      stage.style.aspectRatio = `${meta.w} / ${meta.h}`;
+      const OUT = screenOut(meta);
+      $('fallback').src = dir + '/plate.jpg';
+      freshCanvas(OUT[0], OUT[1]);
+
+      B = { dir, meta, OUT, vw: { x: 0, y: 0, z: 1 }, slots: [], state: [], cache: {}, U: {}, follow: {}, hover: -1, selected: 0, preset: -1, ready: false };
+      setZoomUi();
+      gl = cv.getContext('webgl2', { preserveDrawingBuffer: true, antialias: false });
+      if (!gl) throw new Error('this browser has no WebGL 2.');
+      B.maxTex = Math.min(8192, gl.getParameter(gl.MAX_TEXTURE_SIZE));
+      if (B.maxTex < Math.max(meta.w, meta.h)) throw new Error("this device's graphics card cannot take the template textures.");
+      B.aniso = gl.getExtension('EXT_texture_filter_anisotropic');
+      const artUnits = Math.max(0, Math.min(gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS), 16) - FIXED_UNITS);
+
+      // slots: image-capable ones (not floor, not colorOnly) get a texture unit, in order, while units last
+      let nextUnit = 0;
+      B.slots = meta.slots.map((s) => ({ ...s, texUnit: (!s.floor && !s.colorOnly && nextUnit < artUnits) ? nextUnit++ : -1 }));
+      const slotIndex = Object.fromEntries(B.slots.map((s, i) => [s.key, i]));
+      B.slotIndex = slotIndex;
+      const sp = meta.spill && meta.spill.layers && meta.spill.layers.length ? meta.spill : null;
+      if (sp && sp.layers.length > MAX_SPILL) throw new Error('the template has too many reflection layers.');
+      B.spill = sp ? { layers: sp.layers, files: sp.files, key: null, uD: null, rects: {} } : null;
+      if (sp) sp.layers.forEach((l) => {   // every rect a slot's layers use, read in one pass per image
+        const i = slotIndex[l.slot], r = l.rect || [0, 0, 1, 1];
+        if (i === undefined) return;
+        const list = B.spill.rects[i] || (B.spill.rects[i] = []);
+        if (!list.some((q) => q.join(',') === r.join(','))) list.push(r);
+      });
+      const NS = Math.max(...meta.surfaces.map((s) => s.index)), NL = B.slots.length;
+      B.surfSlot = new Int32Array(NS).fill(-1);
+      meta.surfaces.forEach((s) => { B.surfSlot[s.index - 1] = slotIndex[s.slot] ?? -1; });
+      B.surfEm = new Int32Array(NS);
+      meta.surfaces.forEach((s) => { const sl = meta.slots[slotIndex[s.slot]]; if (s.emissive || (sl && sl.emissive)) B.surfEm[s.index - 1] = 1; });
+
+      const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+      // meta.reflect needs the slot's spill layers and one more texture unit (the default art, so the two match)
+      const rm = meta.reflect;
+      B.refl = null;
+      if (rm && B.spill && slotIndex[rm.slot] !== undefined && B.slots[slotIndex[rm.slot]].texUnit >= 0) {
+        const surf = meta.surfaces.find((s) => s.index === rm.surface) || meta.surfaces.find((s) => s.slot === rm.slot);
+        const unit = FIXED_UNITS + nextUnit;
+        if (surf && unit < Math.min(gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS), 16))
+          B.refl = { slot: rm.slot, slotIdx: slotIndex[rm.slot], k: surf.index - 1, taps: rm.taps, unit, tex: null };
+      }
+      B.main = surfProgram(fragSrc(NS, NL, nextUnit, B.spill, B.refl), meta, NS, nextUnit);
+      const prog = B.main.prog;
+      if (B.refl) {
+        const s = B.slots[B.refl.slotIdx], two = (v, d) => (Array.isArray(v) && v.length === 2 ? v : d);
+        gl.uniform1i(gl.getUniformLocation(prog, 'uRefDef'), B.refl.unit);
+        gl.uniform2fv(gl.getUniformLocation(prog, 'uRefSU'), two(rm.su, [0.002, 0.07]));
+        gl.uniform2fv(gl.getUniformLocation(prog, 'uRefSV'), two(rm.sv, [0.01, 0.3]));
+        gl.uniform3fv(gl.getUniformLocation(prog, 'uRefDefCol'), hexToRgb(s.color));
+        gl.uniform1f(gl.getUniformLocation(prog, 'uRefDefSU'), typeof rm.defSu === 'number' ? rm.defSu : 0);
+        gl.uniform1f(gl.getUniformLocation(prog, 'uRefGap'), typeof rm.gap === 'number' ? rm.gap : 0);
+        B.refl.on = gl.getUniformLocation(prog, 'uRefOn'); gl.uniform1i(B.refl.on, 0);
+      }
+      [['uBloom', 3], ['uGlow', GLOW_UNIT]].forEach(([n, k]) => gl.uniform1i(gl.getUniformLocation(prog, n), k));
+      gl.uniform1i(gl.getUniformLocation(prog, 'uSpOn'), B.spill ? 1 : 0);
+      if (B.spill) {
+        gl.uniform1fv(gl.getUniformLocation(prog, 'uSpL'), B.spill.layers.map((l) => Math.log1p(l.max / (l.knee || 0.002))));
+        gl.uniform1fv(gl.getUniformLocation(prog, 'uSpK'), B.spill.layers.map((l) => l.knee || 0.002));
+        B.spill.uD = gl.getUniformLocation(prog, 'uSpD');
+      }
+      gl.uniform1f(gl.getUniformLocation(prog, 'uBmax'), meta.bmax);
+      gl.uniform1f(gl.getUniformLocation(prog, 'uGrain'), typeof meta.grain === 'number' ? meta.grain : 1);
+      gl.uniform1f(gl.getUniformLocation(prog, 'uSpKeep'), typeof meta.spillKeep === 'number' ? meta.spillKeep : 0);
+      gl.uniform1f(gl.getUniformLocation(prog, 'uStripL'), meta.strip ? Math.log1p(meta.strip.max / meta.strip.knee) : 0);
+      gl.uniform1f(gl.getUniformLocation(prog, 'uStripK'), meta.strip ? meta.strip.knee : 0);
+      gl.uniform1f(gl.getUniformLocation(prog, 'uStripFL'), meta.strip && meta.strip.face ? Math.log1p(meta.strip.face.max / meta.strip.face.knee) : 0);
+      gl.uniform1f(gl.getUniformLocation(prog, 'uStripFK'), meta.strip && meta.strip.face ? meta.strip.face.knee : 0);
+      B.strip = meta.strip ? { on: true, color: meta.strip.color } : null;
+      B.U = { hi: 'uHi', all: 'uAll', accent: 'uAccent', strip: 'uStripCol', view: 'uView', shadeK: 'uShadeK', ss: 'uSS', vw: 'uVw', step: 'uStep', shN: 'uShN', shOn: 'uShOn' };
+      for (const k in B.U) B.U[k] = gl.getUniformLocation(prog, B.U[k]);
+      B.glow = setupGlow(meta, NS, NL, nextUnit, slotIndex);
+      if (meta.overlays && meta.overlays.length) {
+        const op = link(OVL); gl.useProgram(op);
+        gl.uniform1i(gl.getUniformLocation(op, 'uOv'), FIXED_UNITS);
+        gl.uniform2f(gl.getUniformLocation(op, 'uOut'), OUT[0], OUT[1]);
+        B.ovl = { prog: op, items: meta.overlays.map((o) => ({ ...o, on: o.on !== false, tex: null, loading: null, shL: -1 })) };
+      }
+      gl.useProgram(prog);
+      gl.uniform1i(gl.getUniformLocation(prog, 'uGlowOn'), B.glow ? 1 : 0);
+
+      const spillFiles = B.spill ? B.spill.files : [];
+      const shaded = B.ovl ? B.ovl.items.filter((o) => o.shade).slice(0, 4) : [];
+      const [shadows, [plate, shade, idb, bloom, floor, ...spillImgs]] = await Promise.all([
+        Promise.all(shaded.map((o) => bitmap(dir + '/' + o.shade).catch(() => null))),
+        Promise.all(['plate.jpg', 'shade.jpg', 'id.png', 'bloom.png', 'floor.jpg', ...spillFiles].map((f) => bitmap(dir + '/' + f)))]);
+      if (token !== loadToken) return;
+      // shadow maps ride in the plate's array, so they take no texture unit from the art
+      const shLayers = [];
+      for (let j = 0; j < shaded.length; j++) {
+        let m = shadows[j];
+        if (!m) { toast(`The shadow of the “${shaded[j].label}” layer did not load; the layer shows without it.`); continue; }
+        if (m.width !== plate.width || m.height !== plate.height) m = await createImageBitmap(m, { resizeWidth: plate.width, resizeHeight: plate.height, resizeQuality: 'high' });
+        shaded[j].shL = shLayers.length; shLayers.push(m);
+      }
+      if (token !== loadToken) return;
+      texArray(0, [plate, shade, ...shLayers], 'linear'); tex(2, idb, { filter: 'nearest' });
+      gl.uniform1i(B.U.shN, shLayers.length);
+      B.ref = shadeRefs(shade, idb, meta, NS);
+      for (const P of [B.glow && B.glow.emis.prog, prog].filter(Boolean)) { gl.useProgram(P); gl.uniform1fv(gl.getUniformLocation(P, 'uRef'), B.ref); }
+      setOut(OUT, 2); gl.useProgram(prog);
+      if (spillImgs.length) texArray(1, spillImgs, 'linear');
+      tex(3, bloom); tex(4, floor, { mip: true });
+      if (B.refl) {
+        try {
+          const img = await packImage(meta.reflect.art || B.slots[B.refl.slotIdx].art);
+          if (token !== loadToken) return;
+          B.refl.tex = tex(B.refl.unit, img.bmp, { srgb: true, mip: true });
+          gl.useProgram(prog); gl.uniform1i(B.refl.on, 1);
+        } catch (_) { /* the zone colours of the spill layers stay in charge */ }
+      }
+      B.blank = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + FIXED_UNITS); gl.bindTexture(gl.TEXTURE_2D, B.blank);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 0]));
+
+      // CPU copy of the surface map at the pack's size, for hover and drop targets (at any zoom)
+      const c2 = document.createElement('canvas'); c2.width = idb.width; c2.height = idb.height;
+      const x2 = c2.getContext('2d', { willReadFrequently: true }); x2.imageSmoothingEnabled = false;
+      x2.drawImage(idb, 0, 0);
+      const px = x2.getImageData(0, 0, idb.width, idb.height).data; B.idMap = new Uint8Array(idb.width * idb.height); B.idW = idb.width; B.idH = idb.height;
+      for (let i = 0; i < B.idMap.length; i++) B.idMap[i] = px[i * 4];
+
+      B.state = B.slots.map((s) => ({ mode: s.floor ? 2 : 1, color: s.color, tex: null, thumb: null, src: null }));
+      B.slots.forEach((s) => { if (s.follows) B.follow[s.key] = true; });
+      buildRows(); buildStripRow(); buildOverlayRows(); buildPresets();
+      for (let i = 0; i < B.slots.length; i++) await resetSlot(i);
+      if (token !== loadToken) return;
+      markPreset((meta.presets || []).length ? 0 : -1);
+      await Promise.race([capsReady, new Promise((res) => setTimeout(res, 5000))]);
+      let missing = 0;
+      if (caps.db) { statusEl.textContent = 'Loading the saved design…'; missing = await restoreSaved(B); }
+      if (token !== loadToken) return;
+      setSave(!caps.db ? 'off' : caps.assets ? 'on' : 'nofiles');
+      if (missing) toast(`Saved images that did not load: ${missing}. The original design is shown in their place.`);
+      if (B.slots.some((s) => !s.floor && !s.colorOnly && s.texUnit < 0)) toast('Some surfaces here take a colour only: the graphics card is short of texture slots.');
+      B.ready = true;
+      render();
+      stage.classList.add('ready'); statusEl.hidden = true;
+      select(0, false);
+    } catch (err) {
+      if (token !== loadToken) return;
+      statusEl.hidden = false;
+      statusEl.textContent = 'Live preview unavailable: ' + (err && err.message ? err.message : err) + ' Showing the base render.';
+    }
+  }
+
+  // ---------- events
+  // frame position (0..1) under the pointer, through the zoom
+  function framePos(e) {
+    const r = cv.getBoundingClientRect(), v = B.vw;
+    return [v.x + (e.clientX - r.left) / r.width / v.z, v.y + (e.clientY - r.top) / r.height / v.z];
+  }
+  function faceAt(e) {
+    if (!B || !B.idMap) return -1;
+    const [fx, fy] = framePos(e), W = B.idW, H = B.idH;
+    const x = Math.floor(fx * W), y = Math.floor(fy * H);
+    if (x < 0 || y < 0 || x >= W || y >= H) return -1;
+    const id = B.idMap[y * W + x];
+    return id > 0 && id <= B.surfSlot.length ? B.surfSlot[id - 1] : -1;
+  }
+  function imageFile(dt) {
+    if (!dt) return null;
+    for (const it of dt.items || []) if (it.kind === 'file' && it.type.startsWith('image/')) return it.getAsFile();
+    for (const f of dt.files || []) if (f.type.startsWith('image/')) return f;
+    return null;
+  }
+  function placeTag(e, k) {
+    if (k < 0) { tag.hidden = true; return; }
+    const r = stage.getBoundingClientRect();
+    tag.textContent = B.slots[k].label; tag.hidden = false;
+    tag.style.left = Math.min(e.clientX - r.left, r.width - 180) + 'px'; tag.style.top = (e.clientY - r.top) + 'px';
+  }
+  function setHover(k) { if (B && k !== B.hover) { B.hover = k; render(false); } }
+  function bindCanvas() {
+    cv.addEventListener('mousemove', (e) => { const k = faceAt(e); placeTag(e, k); setHover(k); });
+    cv.addEventListener('mouseleave', () => { tag.hidden = true; setHover(-1); });
+    cv.addEventListener('click', (e) => { if (pan.moved) { pan.moved = false; return; } const k = faceAt(e); if (k >= 0) select(k); });
+    cv.addEventListener('wheel', onWheel, { passive: false });
+    cv.addEventListener('pointerdown', onPanStart);
+    cv.addEventListener('dblclick', () => { if (B && B.vw.z > 1) setZoom(1); });
+    cv.addEventListener('dragover', (e) => { e.preventDefault(); stage.classList.add('drop'); const k = faceAt(e); placeTag(e, k); setHover(k); });
+    cv.addEventListener('dragleave', () => { stage.classList.remove('drop'); tag.hidden = true; setHover(-1); });
+    cv.addEventListener('drop', (e) => {
+      e.preventDefault(); stage.classList.remove('drop'); tag.hidden = true;
+      const k = faceAt(e); setHover(-1); const file = imageFile(e.dataTransfer);
+      if (!file || !B || !B.ready) return;
+      if (k < 0) { toast('Drop the image onto one of the booth surfaces.'); return; }
+      if (!canImage(k)) { toast(B.slots[k].floor ? 'The floor takes a colour only.' : 'This surface takes a colour only.'); return; }
+      applyFile(k, file);
+    });
+  }
+  bindCanvas();
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && B && B.dirty) flushSave(B); });
+  document.addEventListener('paste', (e) => {
+    const file = imageFile(e.clipboardData); if (!file || !B || !B.ready) return;
+    e.preventDefault();
+    if (!canImage(B.selected)) { toast('Select a wall, totem or counter to paste an image.'); return; }
+    applyFile(B.selected, file);
+  });
+  $('ev').addEventListener('input', (e) => { evOffset = parseFloat(e.target.value); render(); });
+  $('showAll').addEventListener('click', (e) => { showAll = !showAll; e.currentTarget.setAttribute('aria-pressed', String(showAll)); render(false); });
+  function setView(v) {
+    view = v; $('v-figma').setAttribute('aria-pressed', String(v === 1)); $('v-render').setAttribute('aria-pressed', String(v === 0));
+    $('shadeK-l').hidden = v !== 1; $('ev').closest('label').hidden = v === 1;
+    store('tryon.view', String(v)); render(false);
+  }
+  $('v-figma').addEventListener('click', () => setView(1));
+  $('v-render').addEventListener('click', () => setView(0));
+  $('shadeK').addEventListener('input', (e) => { shadeK = parseFloat(e.target.value); store('tryon.shadeK', String(shadeK)); render(false); });
+  { const k = parseFloat(store('tryon.shadeK')); if (k >= 0 && k <= 1) { shadeK = k; $('shadeK').value = k; } setView(store('tryon.view') === '0' ? 0 : 1); }
+  $('resetAll').addEventListener('click', async () => {
+    if (!B || !B.ready) return;
+    pushUndo();
+    for (let i = 0; i < B.slots.length; i++) await resetSlot(i);
+    if (B.strip) setStrip({ on: true, color: B.meta.strip.color });
+    if (B.ovl) B.ovl.items.forEach((o) => setOverlay(o, (B.meta.overlays.find((m) => m.key === o.key) || {}).on !== false));
+    $('ev').value = 0; evOffset = 0; markPreset((B.meta.presets || []).length ? 0 : -1); render(); queueSave();
+  });
+  // Output size, subpixels per pixel and the part of the frame shown. The screen draws at its own device pixels with
+  // 2 x 2 subpixels; the PNG is the pack's full size, also 2 x 2. Art is sampled from the uploaded image at whatever
+  // size it covers, so zooming in shows the image's own detail.
+  function setOut(o, ss, vw = B.vw) {
+    B.OUT = o; gl.viewport(0, 0, o[0], o[1]);
+    const v = [vw.x, vw.y, 1 / (vw.z * o[0]), 1 / (vw.z * o[1])];
+    gl.useProgram(B.main.prog); gl.uniform2f(gl.getUniformLocation(B.main.prog, 'uOut'), o[0], o[1]); gl.uniform1i(B.U.ss, ss);
+    gl.uniform4fv(B.U.vw, v); gl.uniform2f(B.U.step, v[2] / ss, v[3] / ss);
+    if (B.ovl) {
+      gl.useProgram(B.ovl.prog); gl.uniform2f(gl.getUniformLocation(B.ovl.prog, 'uOut'), o[0], o[1]);
+      gl.uniform1i(gl.getUniformLocation(B.ovl.prog, 'uSS'), ss); gl.uniform4fv(gl.getUniformLocation(B.ovl.prog, 'uVw'), v);
+    }
+  }
+  // the canvas in device pixels for the stage's size on screen (capped so a huge window stays quick)
+  function screenOut(meta) {
+    const r = stage.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 3);
+    let w = Math.round((r.width || meta.w / 2) * dpr);
+    w = Math.max(320, Math.min(w, 4096, meta.w * 2));
+    return [w, Math.round(w * meta.h / meta.w)];
+  }
+  // whole frame (or the zoomed view) at the pack's full size, drawn in strips so a slow GPU never stalls on one draw
+  async function snapshot(vw = { x: 0, y: 0, z: 1 }) {
+    const keepHover = B.hover, keepAll = showAll, keep = B.OUT, full = [B.meta.w, B.meta.h];
+    B.hover = -1; showAll = false;
+    cv.width = full[0]; cv.height = full[1];
+    const big = gl.drawingBufferWidth === full[0] && gl.drawingBufferHeight === full[1];
+    const o = big ? full : keep;
+    if (!big) { cv.width = keep[0]; cv.height = keep[1]; }
+    setOut(o, 2, vw);
+    gl.enable(gl.SCISSOR_TEST);
+    const th = 256;
+    for (let y = 0; y < o[1]; y += th) { gl.scissor(0, y, o[0], Math.min(th, o[1] - y)); render(false); gl.finish(); await new Promise((res) => setTimeout(res, 0)); }
+    gl.disable(gl.SCISSOR_TEST);
+    const blob = await new Promise((res) => cv.toBlob(res, 'image/png'));
+    if (big) { cv.width = keep[0]; cv.height = keep[1]; }
+    setOut(keep, 2);
+    B.hover = keepHover; showAll = keepAll; render(false);
+    return blob;
+  }
+  // ---------- zoom and pan (the frame is redrawn for the view, nothing is scaled up)
+  const pan = { on: false, moved: false, sx: 0, sy: 0, vx: 0, vy: 0, id: 0 };
+  let fastT = 0;
+  function redraw() {
+    if (!B || !B.ready) return;
+    setOut(B.OUT, 1); render(false);
+    clearTimeout(fastT); fastT = setTimeout(() => { if (B && B.ready) { setOut(B.OUT, 2); render(false); } }, 160);
+  }
+  function clampView(v) {
+    v.z = Math.max(1, Math.min(16, v.z));
+    v.x = Math.max(0, Math.min(1 - 1 / v.z, v.x)); v.y = Math.max(0, Math.min(1 - 1 / v.z, v.y));
+  }
+  function setZoomUi() {
+    const z = B ? B.vw.z : 1;
+    $('z-fit').textContent = z < 1.05 ? '1×' : (z < 10 ? z.toFixed(1) : Math.round(z)) + '×';
+    $('saveView').hidden = z < 1.05;
+    stage.classList.toggle('zoomed', z > 1.001);
+  }
+  // zoom by k around the frame point under (fx, fy), the stage fraction 0..1
+  function zoomBy(k, fx = 0.5, fy = 0.5) {
+    if (!B || !B.ready) return;
+    const v = B.vw, px = v.x + fx / v.z, py = v.y + fy / v.z;
+    v.z *= k; v.x = px - fx / v.z; v.y = py - fy / v.z; clampView(v);
+    setZoomUi(); redraw();
+  }
+  function setZoom(z) { if (!B) return; B.vw = { x: 0, y: 0, z }; clampView(B.vw); setZoomUi(); redraw(); }
+  function onWheel(e) {
+    if (!B || !B.ready) return;
+    const r = cv.getBoundingClientRect();
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const d = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      zoomBy(Math.exp(-Math.max(-200, Math.min(200, d)) * 0.004), (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+    } else if (B.vw.z > 1.001) {
+      e.preventDefault();
+      const k = e.deltaMode === 1 ? 16 : 1;
+      B.vw.x += e.deltaX * k / r.width / B.vw.z; B.vw.y += e.deltaY * k / r.height / B.vw.z; clampView(B.vw); redraw();
+    }
+  }
+  function onPanStart(e) {
+    if (!B || !B.ready || e.button !== 0 || B.vw.z <= 1.001) return;
+    Object.assign(pan, { on: true, moved: false, sx: e.clientX, sy: e.clientY, vx: B.vw.x, vy: B.vw.y, id: e.pointerId });
+  }
+  window.addEventListener('pointermove', (e) => {
+    if (!pan.on || e.pointerId !== pan.id) return;
+    const dx = e.clientX - pan.sx, dy = e.clientY - pan.sy;
+    if (!pan.moved && Math.hypot(dx, dy) < 4) return;
+    if (!pan.moved) { pan.moved = true; stage.classList.add('panning'); tag.hidden = true; }
+    const r = cv.getBoundingClientRect();
+    B.vw.x = pan.vx - dx / r.width / B.vw.z; B.vw.y = pan.vy - dy / r.height / B.vw.z; clampView(B.vw); redraw();
+  });
+  window.addEventListener('pointerup', (e) => { if (pan.on && e.pointerId === pan.id) { pan.on = false; stage.classList.remove('panning'); } });
+  $('z-in').addEventListener('click', () => zoomBy(1.6));
+  $('z-out').addEventListener('click', () => zoomBy(1 / 1.6));
+  $('z-fit').addEventListener('click', () => setZoom(1));
+  // a new canvas size when the stage changes size on screen (window, rotation, panel layout)
+  new ResizeObserver(() => {
+    if (!B || !B.ready || !gl) return;
+    const o = screenOut(B.meta);
+    if (Math.abs(o[0] - B.OUT[0]) / B.OUT[0] < 0.03) return;
+    cv.width = o[0]; cv.height = o[1]; setOut(o, 2); render(false);
+  }).observe(stage);
+  async function saveBlob(blob, name) {
+    let downloads = null;
+    try { downloads = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (_) { downloads = null; }
+    if (downloads) {
+      try { await downloads.save({ filename: name, data: blob }); toast('Saved: ' + name); return; }
+      catch (err) { if (err && (err.code === 'declined' || err.code === 'rate_limited')) return; }
+    }
+    // offline copy (no Claude runtime): a plain browser download
+    if (!window.claude) {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      toast('Saved: ' + name); return;
+    }
+    // fallback: show the image so it can be saved with right-click or long-press
+    showSheet(blob, 'Right-click or long-press the image to save it.');
+  }
+  function showSheet(blob, text) {
+    const url = URL.createObjectURL(blob);
+    const sheet = document.createElement('div'); sheet.className = 'sheet';
+    sheet.innerHTML = `<figure><img alt="Full-size booth mockup" src="${url}"><figcaption><span>${esc(text)}</span><button type="button">Close</button></figcaption></figure>`;
+    sheet.querySelector('button').addEventListener('click', () => { sheet.remove(); URL.revokeObjectURL(url); });
+    document.body.appendChild(sheet);
+  }
+  let saving = false;
+  async function saveFrame(zoomed) {
+    if (!gl || !B || !B.ready || saving) return;
+    saving = true; statusEl.hidden = false; statusEl.textContent = 'Rendering the PNG…';
+    try {
+      const blob = await snapshot(zoomed ? { ...B.vw } : undefined);
+      await saveBlob(blob, `booth-${B.dir}-${zoomed ? 'detail' : 'mockup'}.png`);
+    } finally { saving = false; statusEl.hidden = true; }
+  }
+  $('save').addEventListener('click', () => saveFrame(false));
+  $('saveView').addEventListener('click', () => saveFrame(true));
+  // Copy PNG: the frame at full size (zoomed in: the close-up on screen) onto the clipboard. The ClipboardItem is made
+  // inside the click with the render still running, which Safari requires; where the page may not write images to the
+  // clipboard, the PNG opens full size so it can be copied with right-click or long-press.
+  function copyFrame() {
+    if (!gl || !B || !B.ready || saving) return;
+    saving = true; statusEl.hidden = false; statusEl.textContent = 'Rendering the PNG…';
+    const zoomed = B.vw.z > 1.05;
+    const job = snapshot(zoomed ? { ...B.vw } : undefined);
+    let write;
+    try {
+      if (!navigator.clipboard || !navigator.clipboard.write || typeof ClipboardItem === 'undefined') throw new Error('no clipboard');
+      write = navigator.clipboard.write([new ClipboardItem({ 'image/png': job })]);
+    } catch (err) { write = Promise.reject(err); }
+    write.then(() => toast(zoomed ? 'Copied the close-up as a PNG.' : 'Copied the frame as a PNG.'))
+      .catch(async () => {
+        const blob = await job.catch(() => null);
+        if (blob) showSheet(blob, 'The browser did not allow copying here: right-click or long-press the image and choose Copy Image.');
+        else toast('Could not render the PNG.');
+      })
+      .finally(async () => { await job.catch(() => null); saving = false; statusEl.hidden = true; });
+  }
+  $('copy').addEventListener('click', copyFrame);
+
+  (async () => {
+    let booths = [{ dir: '02', name: '02' }];
+    try { const j = await (await fetch('booths.json')).json(); if (j.booths && j.booths.length) booths = j.booths; } catch (_) {}
+    const host = $('booths');
+    host.hidden = booths.length < 2;
+    booths.forEach((b) => {
+      const el = document.createElement('button'); el.type = 'button'; el.dataset.dir = b.dir; el.textContent = b.name || b.dir;
+      el.addEventListener('click', () => { if (!B || B.dir !== b.dir) loadBooth(b.dir); }); host.appendChild(el);
+    });
+    const last = store('tryon.booth');
+    loadBooth(booths.some((b) => b.dir === last) ? last : booths[0].dir);
+  })();
+})();
+</script>
+
+</body></html>

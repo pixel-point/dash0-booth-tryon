@@ -1,0 +1,720 @@
+{
+ "name": "08 · Corner 4 × 3 m · Pit Stop",
+ "w": 4200,
+ "h": 2800,
+ "ev": 1.2,
+ "wb": [
+  0.97,
+  1.0,
+  1.05
+ ],
+ "smax": 1.4149497747421265,
+ "bmax": 0.7169814571738243,
+ "floorDefault": "#28262c",
+ "slots": [
+  {
+   "key": "hdr_front",
+   "label": "Header · front side",
+   "mm": [
+    4000,
+    500
+   ],
+   "art": "hdr_front.png",
+   "color": "#e8553f",
+   "floor": false,
+   "note": "LED panel, self-lit.",
+   "emissive": true
+  },
+  {
+   "key": "hdr_side",
+   "label": "Header · right side",
+   "mm": [
+    3000,
+    500
+   ],
+   "art": "hdr_side.png",
+   "color": "#e8553f",
+   "floor": false,
+   "note": "LED panel. Its left edge is at the corner with the Pit Stop column.",
+   "emissive": true
+  },
+  {
+   "key": "column",
+   "label": "Pit Stop column",
+   "mm": [
+    1000,
+    2700
+   ],
+   "art": "column.png",
+   "color": "#f2846f",
+   "floor": false,
+   "note": "LED panels, one image across both visible faces.",
+   "emissive": true
+  },
+  {
+   "key": "hdr_in_back",
+   "label": "Header inside · back",
+   "mm": [
+    3600,
+    500
+   ],
+   "art": "hdr_in_back.png",
+   "color": "#f59b3d",
+   "floor": false,
+   "note": "LED panel. It shows in the opening under the front header.",
+   "emissive": true
+  },
+  {
+   "key": "hdr_in_left",
+   "label": "Header inside · left",
+   "mm": [
+    2600,
+    500
+   ],
+   "art": "hdr_in_left.png",
+   "color": "#f27848",
+   "floor": false,
+   "note": "LED panel above the dark wall. From this angle the front header hides almost all of it.",
+   "emissive": true
+  },
+  {
+   "key": "wall",
+   "label": "Dark wall",
+   "mm": [
+    3000,
+    2700
+   ],
+   "art": "wall.png",
+   "color": "#1c1a1f",
+   "floor": false,
+   "note": "Print on the inner side of the wall, left edge at the aisle. The two red rectangles are 55″ screens on the wall; they are self-lit."
+  },
+  {
+   "key": "screen",
+   "label": "Screen 50″",
+   "mm": [
+    1110,
+    640
+   ],
+   "art": "screen.png",
+   "color": "#10141d",
+   "floor": false,
+   "note": "Screen on the counter, self-lit.",
+   "emissive": true
+  },
+  {
+   "key": "panel",
+   "label": "Back right panel · outside",
+   "mm": [
+    1000,
+    2700
+   ],
+   "art": "panel.png",
+   "color": "#1c1a1f",
+   "floor": false,
+   "note": "LED panel on the outer side of the back panel, left edge nearer the aisle.",
+   "emissive": true
+  },
+  {
+   "key": "counter_front",
+   "label": "Table · front",
+   "mm": [
+    1000,
+    1050
+   ],
+   "art": "counter_front.png",
+   "color": "#ecece8",
+   "floor": false,
+   "note": "The front of the demo table, as seen from the aisle."
+  },
+  {
+   "key": "counter_top",
+   "label": "Table · top",
+   "mm": [
+    1000,
+    500
+   ],
+   "art": "counter_top.png",
+   "color": "#ecece8",
+   "floor": false,
+   "note": "The table top. The image's top edge is at the wall, its bottom edge at the aisle."
+  },
+  {
+   "key": "floor",
+   "label": "Floor",
+   "mm": [
+    4000,
+    3000
+   ],
+   "art": null,
+   "color": "#28262c",
+   "floor": true,
+   "note": "Carpet tiles 1 × 1 m."
+  }
+ ],
+ "glow": {
+  "threshold": 1.0,
+  "grid": 4,
+  "sigmas": [
+   4.0,
+   20.0,
+   80.0
+  ],
+  "weights": [
+   0.1,
+   0.035,
+   0.014
+  ]
+ },
+ "surfaces": [
+  {
+   "index": 1,
+   "key": "hdr_front",
+   "slot": "hdr_front",
+   "H": [
+    4.30377369966816,
+    0.013142135254740037,
+    -0.9856257691525331,
+    3.6100579450878825,
+    15.432411372535485,
+    -4.745050238287993,
+    1.0939570112488888,
+    0.017432282084744937,
+    1.0
+   ],
+   "emissive": true
+  },
+  {
+   "index": 2,
+   "key": "hdr_side",
+   "slot": "hdr_side",
+   "H": [
+    2.307566611776439,
+    -0.0030842024454004456,
+    -1.4274845512698138,
+    -2.8822842907178448,
+    4.236129593248639,
+    1.0943664973558946,
+    -0.8734195624653965,
+    0.006347491666499376,
+    1.0
+   ],
+   "emissive": true,
+   "tone": 0.6
+  },
+  {
+   "index": 3,
+   "key": "hdr_in_back",
+   "slot": "hdr_in_back",
+   "H": [
+    5.981117058412687,
+    0.00447755550476913,
+    -2.5932104514376464,
+    3.6100586705022226,
+    22.728971392772753,
+    -8.563042107829022,
+    1.0939573633492725,
+    0.01743229459525786,
+    1.0
+   ],
+   "emissive": true,
+   "tone": 0.72
+  },
+  {
+   "index": 4,
+   "key": "hdr_in_left",
+   "slot": "hdr_in_left",
+   "H": [
+    3.5918407677899458,
+    0.009690934187804815,
+    -0.9359860633226968,
+    -2.8822852911133494,
+    9.575365584401757,
+    -1.699436662968374,
+    -0.8734198211846256,
+    0.0063483911988825295,
+    1.0
+   ],
+   "emissive": true,
+   "tone": 0.6
+  },
+  {
+   "index": 5,
+   "key": "col_pz",
+   "slot": "column",
+   "H": [
+    13.933226693665265,
+    0.0002716515370698076,
+    -6.942504508413326,
+    0.4659449748307216,
+    2.8546262939741522,
+    -1.0638985370864593,
+    1.093957686258596,
+    0.017432078263347466,
+    1.0
+   ],
+   "emissive": true
+  },
+  {
+   "index": 6,
+   "key": "col_px",
+   "slot": "column",
+   "H": [
+    6.922700049821869,
+    -0.009252588510605468,
+    -4.282453790949424,
+    -0.3720120159501455,
+    0.7832929948372118,
+    0.01747529273764165,
+    -0.8734195328168973,
+    0.006347437613360528,
+    1.0
+   ],
+   "emissive": true,
+   "tone": 0.6
+  },
+  {
+   "index": 7,
+   "key": "wall",
+   "slot": "wall",
+   "H": [
+    3.054699495107116,
+    0.008821302803545187,
+    -0.7445207694243214,
+    -0.3720120136779209,
+    1.7720396156115807,
+    -0.49989548041348014,
+    -0.8734195388837043,
+    0.00634741312672279,
+    1.0
+   ]
+  },
+  {
+   "index": 8,
+   "key": "wall_scr_l",
+   "slot": "wall",
+   "H": [
+    3.0468355164417016,
+    0.00869598070531777,
+    -0.7517100114478761,
+    -0.37201184676046545,
+    1.7616321903855308,
+    -0.4944497370081527,
+    -0.8734192145080998,
+    0.006347342728224088,
+    1.0
+   ],
+   "emissive": true
+  },
+  {
+   "index": 9,
+   "key": "wall_scr_r",
+   "slot": "wall",
+   "H": [
+    3.046835332378961,
+    0.008695799032936283,
+    -0.7517099542675542,
+    -0.37201195275143956,
+    1.761631867744865,
+    -0.494449584912103,
+    -0.8734194271563843,
+    0.006347249571300795,
+    1.0
+   ],
+   "emissive": true
+  },
+  {
+   "index": 10,
+   "key": "screen",
+   "slot": "screen",
+   "H": [
+    17.739640201358657,
+    0.009424353428589806,
+    -8.033434657850936,
+    0.23930295072348204,
+    16.433266597013123,
+    -8.378112925221325,
+    1.0939562475261237,
+    0.017430760921355787,
+    1.0
+   ],
+   "emissive": true
+  },
+  {
+   "index": 11,
+   "key": "panel",
+   "slot": "panel",
+   "H": [
+    8.669534812941096,
+    -0.021947472759013167,
+    -6.282450676079811,
+    -0.37201212424153507,
+    0.783292603038457,
+    0.0174755058192634,
+    -0.8734197567230488,
+    0.006347428495272822,
+    1.0
+   ],
+   "emissive": true,
+   "tone": 0.6
+  },
+  {
+   "index": 12,
+   "key": "counter_front",
+   "slot": "counter_front",
+   "H": [
+    16.16532105476217,
+    0.017047113705930147,
+    -6.569835609564972,
+    -0.5209316297824584,
+    7.933529669267089,
+    -4.63182676424634,
+    1.0939579286557664,
+    0.017432073539301738,
+    1.0
+   ]
+  },
+  {
+   "index": 13,
+   "key": "counter_top",
+   "slot": "counter_top",
+   "H": [
+    -1.187969357506961,
+    -10.12006168665309,
+    6.660069163357456,
+    1.6045284342688702,
+    -26.347238027896307,
+    15.266534511514102,
+    -2.2855900913207743e-06,
+    -1.9110933447402338,
+    1.0
+   ]
+  },
+  {
+   "index": 14,
+   "key": "booth_floor",
+   "slot": "floor",
+   "H": [
+    -0.9206881285157884,
+    -3.337731802132669,
+    2.8041190135268055,
+    0.8290179077683202,
+    -5.656382279318145,
+    3.7244824258706353,
+    -1.3593294890606354e-08,
+    -1.911098711683195,
+    1.0
+   ]
+  }
+ ],
+ "presets": [
+  {
+   "label": "Figma designs",
+   "slots": {
+    "hdr_front": "hdr_front.png",
+    "hdr_side": "hdr_side.png",
+    "hdr_in_left": "hdr_in_left.png",
+    "hdr_in_back": "hdr_in_back.png",
+    "column": "column.png",
+    "wall": "wall.png",
+    "screen": "screen.png",
+    "panel": "panel.png",
+    "counter_front": "counter_front.png",
+    "counter_top": "counter_top.png",
+    "floor": "#28262c"
+   }
+  },
+  {
+   "label": "White booth",
+   "slots": {
+    "hdr_front": "#ffffff",
+    "hdr_side": "#ffffff",
+    "hdr_in_left": "#ffffff",
+    "hdr_in_back": "#ffffff",
+    "column": "#ffffff",
+    "screen": "#10141d",
+    "panel": "#ffffff",
+    "counter_front": "#ffffff",
+    "counter_top": "#ffffff",
+    "wall": "#ffffff",
+    "floor": "#d8d8d8"
+   }
+  }
+ ],
+ "overlays": [
+  {
+   "key": "hosts",
+   "label": "Hosts",
+   "file": "hosts.png",
+   "on": true,
+   "note": "Two hosts in red overalls: one behind the demo table, the other at the aisle with a backpack, as on the Pit Stop column. They suit any design."
+  },
+  {
+   "key": "faces",
+   "label": "Face shading",
+   "spec": "Side and inner faces darker",
+   "tone": true,
+   "on": true,
+   "note": "The LED walls glow evenly, so neighbouring faces with the same background merge. With this on, the side and inner faces read darker than the front and the booth keeps its volume. Turn it off for the even LED look."
+  }
+ ],
+ "lift": 0.0,
+ "vig": 0.15,
+ "spill": {
+  "files": [
+   "spill0.png",
+   "spill1.png",
+   "spill2.png",
+   "spill3.png",
+   "spill4.png",
+   "spill5.png"
+  ],
+  "layers": [
+   {
+    "key": "hdr_front",
+    "slot": "hdr_front",
+    "f": 0,
+    "ch": 0,
+    "max": 0.16443610046952162,
+    "knee": 0.002,
+    "c0": [
+     0.481722301253309,
+     0.524779949899448,
+     0.5751515589330602
+    ]
+   },
+   {
+    "key": "hdr_side",
+    "slot": "hdr_side",
+    "f": 0,
+    "ch": 1,
+    "max": 0.06958949724529308,
+    "knee": 0.002,
+    "c0": [
+     0.45793258066405773,
+     0.49880118420902425,
+     0.5465948968964959
+    ]
+   },
+   {
+    "key": "column",
+    "slot": "column",
+    "f": 0,
+    "ch": 2,
+    "max": 0.35116986710083103,
+    "knee": 0.002,
+    "c0": [
+     0.18511687754133213,
+     0.06775110052216701,
+     0.07247949687385873
+    ]
+   },
+   {
+    "key": "hdr_in_back",
+    "slot": "hdr_in_back",
+    "f": 1,
+    "ch": 0,
+    "max": 0.15476523941175366,
+    "knee": 0.002,
+    "c0": [
+     0.464624586391645,
+     0.5061282938778786,
+     0.554716398060588
+    ]
+   },
+   {
+    "key": "hdr_in_left",
+    "slot": "hdr_in_left",
+    "f": 1,
+    "ch": 1,
+    "max": 0.042562310172864305,
+    "knee": 0.002,
+    "c0": [
+     0.495678018897284,
+     0.5399501096441939,
+     0.591788489128682
+    ]
+   },
+   {
+    "key": "panel",
+    "slot": "panel",
+    "f": 1,
+    "ch": 2,
+    "max": 0.25127722137825337,
+    "knee": 0.002,
+    "c0": [
+     0.20818278782270008,
+     0.19731289662291374,
+     0.2327403706826019
+    ]
+   },
+   {
+    "key": "screen",
+    "slot": "screen",
+    "f": 2,
+    "ch": 0,
+    "max": 0.033207052921968315,
+    "knee": 0.002,
+    "c0": [
+     0.0812456035760816,
+     0.08285092919585717,
+     0.08749401291388448
+    ]
+   },
+   {
+    "key": "wall_scr_l",
+    "slot": "wall",
+    "f": 2,
+    "ch": 1,
+    "max": 0.06495538785471514,
+    "knee": 0.002,
+    "c0": [
+     0.16297116267956024,
+     0.021113489272817476,
+     0.026610506798722598
+    ],
+    "rect": [
+     0.07,
+     0.3611111111111111,
+     0.4708333333333333,
+     0.6148148148148148
+    ]
+   },
+   {
+    "key": "wall_scr_r",
+    "slot": "wall",
+    "f": 2,
+    "ch": 2,
+    "max": 0.06459750080497188,
+    "knee": 0.002,
+    "c0": [
+     0.1629711618649418,
+     0.02111347046223858,
+     0.026610514719585216
+    ],
+    "rect": [
+     0.5291666666666667,
+     0.3611111111111111,
+     0.93,
+     0.6148148148148148
+    ]
+   },
+   {
+    "key": "wall_plate",
+    "slot": "wall",
+    "f": 3,
+    "ch": 0,
+    "max": 0.0952740170653735,
+    "knee": 0.002,
+    "c0": [
+     0.05998418833099801,
+     0.027852598694358608,
+     0.03174477750312104
+    ]
+   },
+   {
+    "key": "floor_plate",
+    "slot": "floor",
+    "f": 3,
+    "ch": 1,
+    "max": 0.0521249131459979,
+    "knee": 0.002,
+    "c0": [
+     0.021219010376003555,
+     0.019382360956935723,
+     0.02518685962736163
+    ]
+   },
+   {
+    "key": "counter_front_plate",
+    "slot": "counter_front",
+    "f": 3,
+    "ch": 2,
+    "max": 0.0437559700421039,
+    "knee": 0.002,
+    "c0": [
+     0.8387990117340118,
+     0.8387990117340118,
+     0.8069522576547187
+    ]
+   },
+   {
+    "key": "counter_top_plate",
+    "slot": "counter_top",
+    "f": 4,
+    "ch": 0,
+    "max": 0.005954935253956093,
+    "knee": 0.002,
+    "c0": [
+     0.8387990117420417,
+     0.8387990117420417,
+     0.8069522576697417
+    ]
+   },
+   {
+    "key": "wall_shade",
+    "slot": "wall",
+    "f": 4,
+    "ch": 1,
+    "max": 0.11580366818063266,
+    "knee": 0.002,
+    "c0": [
+     0.05998418833099801,
+     0.027852598694358608,
+     0.03174477750312104
+    ]
+   },
+   {
+    "key": "floor_shade",
+    "slot": "floor",
+    "f": 4,
+    "ch": 2,
+    "max": 0.3232273839661832,
+    "knee": 0.002,
+    "c0": [
+     0.021219010376003555,
+     0.019382360956935723,
+     0.02518685962736163
+    ]
+   },
+   {
+    "key": "counter_front_shade",
+    "slot": "counter_front",
+    "f": 5,
+    "ch": 0,
+    "max": 0.12224097701392357,
+    "knee": 0.002,
+    "c0": [
+     0.8387990117340118,
+     0.8387990117340118,
+     0.8069522576547187
+    ]
+   },
+   {
+    "key": "counter_top_shade",
+    "slot": "counter_top",
+    "f": 5,
+    "ch": 1,
+    "max": 0.007305653075052937,
+    "knee": 0.002,
+    "c0": [
+     0.8387990117420417,
+     0.8387990117420417,
+     0.8069522576697417
+    ]
+   }
+  ]
+ },
+ "strip": {
+  "label": "Base lighting",
+  "spec": "LED strip around the platform",
+  "note": "Turn it off or pick a colour: the strip, its glow on the hall floor and on the stand change at once.",
+  "color": "#ff2419",
+  "max": 13.640335693359374,
+  "knee": 0.002,
+  "face": {
+   "max": 0.03828468061611056,
+   "knee": 0.002
+  }
+ }
+}

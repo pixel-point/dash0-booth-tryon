@@ -1,0 +1,185 @@
+{
+ "name": "09 · Corner 3 × 3 m · two walls",
+ "w": 4200,
+ "h": 2800,
+ "ev": 1.2,
+ "wb": [
+  0.97,
+  1.0,
+  1.05
+ ],
+ "lift": 0.0,
+ "vig": 0.15,
+ "smax": 1.578478455543518,
+ "bmax": 0.40110212540913476,
+ "slots": [
+  {
+   "key": "wall_left",
+   "label": "Left wall",
+   "mm": [
+    3000,
+    2500
+   ],
+   "art": "wall_left.png",
+   "color": "#ebedef",
+   "floor": false,
+   "note": "Print on the inner side. Left edge at the aisle, right edge in the corner (the last 40 mm go into the joint)."
+  },
+  {
+   "key": "wall_back",
+   "label": "Back wall",
+   "mm": [
+    3000,
+    2500
+   ],
+   "art": "wall_back.png",
+   "color": "#d1ddf3",
+   "floor": false,
+   "note": "Print on the inner side. Left edge in the corner (the first 40 mm go into the joint), right edge at the aisle."
+  },
+  {
+   "key": "floor",
+   "label": "Floor (platform)",
+   "mm": [
+    3000,
+    3000
+   ],
+   "art": "floor.png",
+   "color": "#2b2b2e",
+   "floor": false,
+   "note": "Top of the 50 mm platform, seen from above: the image's top edge is at the back wall, its left edge at the left wall."
+  }
+ ],
+ "surfaces": [
+  {
+   "index": 1,
+   "key": "wall_left",
+   "slot": "wall_left",
+   "H": [
+    2.106537126737699,
+    -2.1252750571161964e-08,
+    -0.4021445387485239,
+    -0.18570105890623412,
+    1.7073169612035457,
+    -0.2687804828669445,
+    -0.48868703253411794,
+    -4.914439045308199e-08,
+    1.0
+   ]
+  },
+  {
+   "index": 2,
+   "key": "wall_back",
+   "slot": "wall_back",
+   "H": [
+    27.495072175167003,
+    -2.5634772173802423e-07,
+    -14.679171892443424,
+    3.0956822900032614,
+    12.42730104342882,
+    -4.342374499153491,
+    8.146532943725628,
+    -3.9096037052785523e-07,
+    1.0
+   ]
+  },
+  {
+   "index": 3,
+   "key": "booth_floor",
+   "slot": "floor",
+   "H": [
+    -1.0927996048578013,
+    -6.19298136057375,
+    4.589528170136291,
+    1.7219872007205526,
+    -4.2719290713284686,
+    1.8347096669974605,
+    -7.848059517625537e-09,
+    -2.6315787095869267,
+    1.0
+   ]
+  }
+ ],
+ "presets": [
+  {
+   "label": "Figma designs",
+   "slots": {
+    "wall_left": "wall_left.png",
+    "wall_back": "wall_back.png",
+    "floor": "floor.png"
+   }
+  },
+  {
+   "label": "White booth",
+   "slots": {
+    "wall_left": "#f4f4f2",
+    "wall_back": "#f4f4f2",
+    "floor": "#d8d8d6"
+   }
+  },
+  {
+   "label": "Dark booth",
+   "slots": {
+    "wall_left": "#16181f",
+    "wall_back": "#16181f",
+    "floor": "#2b2b2e"
+   }
+  }
+ ],
+ "spill": {
+  "files": [
+   "spill0.png"
+  ],
+  "layers": [
+   {
+    "key": "wall_left",
+    "slot": "wall_left",
+    "f": 0,
+    "ch": 0,
+    "max": 0.559556136613886,
+    "knee": 0.002,
+    "c0": [
+     0.804904588598275,
+     0.8270755406823294,
+     0.8573760406603375
+    ]
+   },
+   {
+    "key": "wall_back",
+    "slot": "wall_back",
+    "f": 0,
+    "ch": 1,
+    "max": 0.48290456995785647,
+    "knee": 0.002,
+    "c0": [
+     0.5978309397021792,
+     0.6779607335049234,
+     0.8403621612691758
+    ]
+   },
+   {
+    "key": "floor",
+    "slot": "floor",
+    "f": 0,
+    "ch": 2,
+    "max": 0.7964608426121736,
+    "knee": 0.002,
+    "c0": [
+     0.024157632448066946,
+     0.024157632448066946,
+     0.02732089163983745
+    ]
+   }
+  ]
+ },
+ "overlays": [
+  {
+   "key": "stool",
+   "label": "Stool",
+   "on": true,
+   "file": "stool.png",
+   "shade": "stool_shadow.png",
+   "shadeMax": 1.2686567164179106
+  }
+ ]
+}

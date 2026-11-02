@@ -1,0 +1,459 @@
+{
+ "name": "11 · Corner 6 × 3 m · counter and table",
+ "w": 4200,
+ "h": 2800,
+ "ev": 1.2,
+ "wb": [
+  0.97,
+  1.0,
+  1.05
+ ],
+ "lift": 0.0,
+ "vig": 0.15,
+ "smax": 0.47084420919418335,
+ "bmax": 0.3157852027633259,
+ "slots": [
+  {
+   "key": "back",
+   "label": "Back wall",
+   "mm": [
+    6000,
+    2500
+   ],
+   "art": "back.png",
+   "color": "#ebedef",
+   "note": "One continuous 6000 mm print, no joints. The left edge is the corner (the first 40 mm sit behind the side wall). The counter stands in front of 4000–5000 mm up to 1000 mm high; the table and chairs (they can be hidden) stand in front of 1100–2950 mm below 840 mm."
+  },
+  {
+   "key": "left",
+   "label": "Side wall (left)",
+   "mm": [
+    3000,
+    2500
+   ],
+   "art": "left.png",
+   "color": "#2c2730",
+   "note": "Three 1000 mm panels. The left edge is at the aisle, the right edge is the corner."
+  },
+  {
+   "key": "floor",
+   "label": "Platform floor",
+   "mm": [
+    6000,
+    3000
+   ],
+   "art": "floor.png",
+   "color": "#2b2b2e",
+   "note": "Print on the 50 mm platform. The top edge is the back wall, the left edge the side wall."
+  },
+  {
+   "key": "counter_front",
+   "label": "Counter · front",
+   "mm": [
+    1000,
+    1000
+   ],
+   "art": "counter_front.png",
+   "color": "#adb8c6",
+   "note": "The side facing the aisle."
+  },
+  {
+   "key": "counter_end",
+   "label": "Counter · end",
+   "mm": [
+    500,
+    1000
+   ],
+   "art": "counter_end.png",
+   "color": "#adb8c6",
+   "note": "One design for both ends. The left end shows from this angle; its left edge is the wall side."
+  },
+  {
+   "key": "counter_top",
+   "label": "Counter · top",
+   "mm": [
+    1000,
+    500
+   ],
+   "art": "counter_top.png",
+   "color": "#26262a",
+   "note": "The top edge is the wall side. It is barely visible from this angle."
+  }
+ ],
+ "surfaces": [
+  {
+   "index": 1,
+   "key": "back_a",
+   "slot": "back",
+   "H": [
+    1.914280075479445,
+    1.3261891439256424e-08,
+    -0.46409550397008875,
+    0.01368915018633496,
+    3.0404629730209725,
+    -1.0242314634002567,
+    0.027599113468233568,
+    5.901245451699323e-08,
+    1.0
+   ]
+  },
+  {
+   "index": 2,
+   "key": "back_b",
+   "slot": "back",
+   "H": [
+    1.914280186589321,
+    1.3721712944237119e-09,
+    -0.4640955436171992,
+    0.013689199808320377,
+    3.040462969410075,
+    -1.0242314801413548,
+    0.02759919122729744,
+    5.1583952869754755e-09,
+    1.0
+   ]
+  },
+  {
+   "index": 3,
+   "key": "back_c",
+   "slot": "back",
+   "H": [
+    1.9142799617789479,
+    1.2116229479274774e-08,
+    -0.46409543304618683,
+    0.013689166599001379,
+    3.0404629216740404,
+    -1.0242314472923981,
+    0.0275991438288966,
+    1.1464840016256854e-08,
+    1.0
+   ]
+  },
+  {
+   "index": 4,
+   "key": "left",
+   "slot": "left",
+   "H": [
+    4.608463831588194,
+    9.402942575682478e-09,
+    -0.6116658902640445,
+    -0.9502481835072224,
+    1.5969964479591732,
+    -0.3024982172350267,
+    -1.9158229437786916,
+    1.09666104104697e-08,
+    1.0
+   ]
+  },
+  {
+   "index": 5,
+   "key": "floor",
+   "slot": "floor",
+   "H": [
+    -0.6298119636382795,
+    -1.0550001283045052,
+    0.8562422613214011,
+    0.030804668706491525,
+    -6.760002322336225,
+    4.496147375456556,
+    5.811015327434364e-10,
+    -2.000000201986085,
+    1.0
+   ]
+  },
+  {
+   "index": 6,
+   "key": "counter_front",
+   "slot": "counter_front",
+   "H": [
+    8.147634662357328,
+    3.296944180104389e-08,
+    -5.099840330689127,
+    -0.007176007763595127,
+    5.448748523233391,
+    -2.9843740684358124,
+    0.0275986418859093,
+    -8.500096614196488e-08,
+    1.0
+   ]
+  },
+  {
+   "index": 7,
+   "key": "counter_end",
+   "slot": "counter_end",
+   "H": [
+    -29.577043562780997,
+    4.5143734747681187e-10,
+    18.313969666147667,
+    0.4980386778646676,
+    -1.0667314873325395,
+    0.2734097266041939,
+    -1.9158050316662654,
+    4.625884701189925e-08,
+    1.0
+   ]
+  },
+  {
+   "index": 8,
+   "key": "counter_top",
+   "slot": "counter_top",
+   "H": [
+    -0.7798563322917693,
+    1.670299194631693,
+    -0.428093938074026,
+    0.03814424513936373,
+    -30.96349609739987,
+    16.86379825484417,
+    8.934516800757735e-07,
+    -2.0000209248647303,
+    1.0
+   ]
+  }
+ ],
+ "presets": [
+  {
+   "label": "Figma design",
+   "slots": {
+    "back": "back.png",
+    "left": "left.png",
+    "floor": "floor.png",
+    "counter_front": "counter_front.png",
+    "counter_end": "counter_end.png",
+    "counter_top": "counter_top.png"
+   }
+  },
+  {
+   "label": "Grey, as in the reference",
+   "slots": {
+    "back": "#c8cacd",
+    "left": "#c8cacd",
+    "floor": "#2b2b2e",
+    "counter_front": "#a7a9ad",
+    "counter_end": "#a7a9ad",
+    "counter_top": "#3a3b3e"
+   }
+  },
+  {
+   "label": "Dark walls",
+   "slots": {
+    "back": "#16181f",
+    "left": "#16181f",
+    "floor": "#2b2b2e",
+    "counter_front": "#eaf1f6",
+    "counter_end": "#eaf1f6",
+    "counter_top": "#eaf1f6"
+   }
+  }
+ ],
+ "spill": {
+  "files": [
+   "spill0.png",
+   "spill1.png",
+   "spill2.png",
+   "spill3.png"
+  ],
+  "layers": [
+   {
+    "key": "back_a_plate",
+    "slot": "back",
+    "f": 0,
+    "ch": 0,
+    "max": 0.07473096475345659,
+    "knee": 0.002,
+    "c0": [
+     0.7561762184798523,
+     0.7709247770908916,
+     0.7861741453434887
+    ],
+    "rect": [
+     0,
+     0,
+     0.3333333333333333,
+     1
+    ]
+   },
+   {
+    "key": "back_b_plate",
+    "slot": "back",
+    "f": 0,
+    "ch": 1,
+    "max": 0.07018968444143167,
+    "knee": 0.002,
+    "c0": [
+     0.9000153347714877,
+     0.9085147308044366,
+     0.9177398784931234
+    ],
+    "rect": [
+     0.3333333333333333,
+     0,
+     0.6666666666666666,
+     1
+    ]
+   },
+   {
+    "key": "back_c_plate",
+    "slot": "back",
+    "f": 0,
+    "ch": 2,
+    "max": 0.050011106096752196,
+    "knee": 0.002,
+    "c0": [
+     0.9252360678464743,
+     0.925563181574686,
+     0.9329611301648393
+    ],
+    "rect": [
+     0.6666666666666666,
+     0,
+     1,
+     1
+    ]
+   },
+   {
+    "key": "left_plate",
+    "slot": "left",
+    "f": 1,
+    "ch": 0,
+    "max": 0.08188685596018554,
+    "knee": 0.002,
+    "c0": [
+     0.05872950874090253,
+     0.053988805643224475,
+     0.06295674608292158
+    ]
+   },
+   {
+    "key": "counter_front_plate",
+    "slot": "counter_front",
+    "f": 1,
+    "ch": 1,
+    "max": 0.050269021627621174,
+    "knee": 0.002,
+    "c0": [
+     0.39747335556697655,
+     0.45590524794457676,
+     0.5371231122808385
+    ]
+   },
+   {
+    "key": "floor_plate",
+    "slot": "floor",
+    "f": 1,
+    "ch": 2,
+    "max": 0.026674088482802644,
+    "knee": 0.002,
+    "c0": [
+     0.02415763245392611,
+     0.02415763245392611,
+     0.027320891638334215
+    ]
+   },
+   {
+    "key": "back_a_shade",
+    "slot": "back",
+    "f": 2,
+    "ch": 0,
+    "max": 0.16704497562220616,
+    "knee": 0.002,
+    "c0": [
+     0.7688902348899964,
+     0.7688902348899964,
+     0.7688902348899964
+    ],
+    "rect": [
+     0,
+     0,
+     0.3333333333333333,
+     1
+    ]
+   },
+   {
+    "key": "back_b_shade",
+    "slot": "back",
+    "f": 2,
+    "ch": 1,
+    "max": 0.1250614843799217,
+    "knee": 0.002,
+    "c0": [
+     0.9035780125557713,
+     0.9035780125557713,
+     0.9035780125557713
+    ],
+    "rect": [
+     0.3333333333333333,
+     0,
+     0.6666666666666666,
+     1
+    ]
+   },
+   {
+    "key": "back_c_shade",
+    "slot": "back",
+    "f": 2,
+    "ch": 2,
+    "max": 0.07560155362619904,
+    "knee": 0.002,
+    "c0": [
+     0.9207039932426531,
+     0.9207039932426531,
+     0.9207039932426531
+    ],
+    "rect": [
+     0.6666666666666666,
+     0,
+     1,
+     1
+    ]
+   },
+   {
+    "key": "left_shade",
+    "slot": "left",
+    "f": 3,
+    "ch": 0,
+    "max": 0.20253180662534234,
+    "knee": 0.002,
+    "c0": [
+     0.05527220041100144,
+     0.05527220041100144,
+     0.05527220041100144
+    ]
+   },
+   {
+    "key": "counter_front_shade",
+    "slot": "counter_front",
+    "f": 3,
+    "ch": 1,
+    "max": 0.003068741430906395,
+    "knee": 0.002,
+    "c0": [
+     0.44934655743017704,
+     0.44934655743017704,
+     0.44934655743017704
+    ]
+   },
+   {
+    "key": "floor_shade",
+    "slot": "floor",
+    "f": 3,
+    "ch": 2,
+    "max": 0.24370299272899654,
+    "knee": 0.002,
+    "c0": [
+     0.024386019767040377,
+     0.024386019767040377,
+     0.024386019767040377
+    ]
+   }
+  ]
+ },
+ "overlays": [
+  {
+   "key": "furniture",
+   "label": "Table and chairs",
+   "on": true,
+   "file": "furniture.png",
+   "shade": "furniture_shadow.png"
+  }
+ ]
+}
