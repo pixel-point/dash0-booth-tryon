@@ -946,7 +946,8 @@ ${spillSrc(sp, rf ? rf.slot : null)}
     const NL = B.slots.length, cols = new Float32Array(NL * 3), modes = new Int32Array(NL);
     B.state.forEach((st, i) => { cols.set(hexToRgb(st.color), i * 3); modes[i] = st.mode; });
     const toneOn = !!(B.ovl && B.ovl.items.some((o) => o.tone && o.on));
-    const tones = new Float32Array(B.meta.surfaces.length).fill(1);
+    // one entry per surface index (07 skips indices 13 and 14, so the count of surfaces is not enough)
+    const tones = new Float32Array(Math.max(...B.meta.surfaces.map((s) => s.index))).fill(1);
     if (toneOn) B.meta.surfaces.forEach((s) => { if (typeof s.tone === 'number' && s.tone > 0 && s.tone <= 2) tones[s.index - 1] = s.tone; });
     for (const P of [B.main, B.glow && B.glow.emis].filter(Boolean)) {
       gl.useProgram(P.prog);
